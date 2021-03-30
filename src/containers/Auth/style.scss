@@ -1,0 +1,21 @@
+@import "../../styles/colors";
+
+.auth {
+  padding-top: 2%;
+  height: 100%;
+  background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+}
+
+.form-row {
+  margin-top: 25px;
+}
+
+.btn-secondary {
+  color: rgb(0, 0, 0);
+  background-color: #ffffffe3;
+  border-color: rgb(0, 0, 0);
+}
+
+.btn-light {
+  background-color: rgb(216, 216, 212);
+}
