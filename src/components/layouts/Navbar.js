@@ -1,13 +1,9 @@
 import React from "react";
-import { Navbar, Row, Col, Form, FormGroup, Input } from "reactstrap";
-
-// Icons
-import { FaBars } from "react-icons/fa";
+import { Navbar, Row, Col, Input } from "reactstrap";
 
 import { connect } from "react-redux";
 import { Avatar, Space } from "antd";
 import { AiOutlineLogout } from "react-icons/ai";
-import { FiLogOut } from "react-icons/fi";
 
 class Header extends React.Component {
   constructor(props) {
@@ -34,11 +30,6 @@ class Header extends React.Component {
       <div>
         <Navbar expand="md" className="navbar py-3 m-0">
           <Row style={{ width: "120%" }}>
-            {/* <Col md="3">
-              <div hidden>
-                <FaBars onClick={this.props.handleClick} size="24px" />
-              </div>
-            </Col> */}
             <Col md="12" className="text-right">
               <Space size={24}>
                 <Input type="select">
