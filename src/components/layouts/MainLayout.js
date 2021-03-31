@@ -4,7 +4,6 @@ import ChatList from "../../containers/Chat/components/ChatList";
 import ChatDetail from "../../containers/Chat/components/ChatDetail";
 
 import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
 
 class MainLayout extends React.Component {
   constructor(props) {
@@ -23,12 +22,6 @@ class MainLayout extends React.Component {
     const { children } = this.props;
     return (
       <main>
-        {/* <Navbar
-          activeSidebar={this.state.activeSidebar}
-          handleClick={() => {
-            this.handleClick();
-          }}
-        /> */}
         <div className="d-flex align-items-stretch p-3">
           <ChatList />
           <div id="content" className="w-100">

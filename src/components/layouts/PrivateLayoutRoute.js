@@ -1,8 +1,6 @@
-import React, { Component } from "react";
+import React from "react";
 import { Redirect, Route } from "react-router";
 import { checkToken } from "../../function/storage_function";
-
-// const access_is_valid =
 
 const PrivateLayoutRoute = ({
   component: Component,

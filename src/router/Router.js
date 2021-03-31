@@ -16,7 +16,6 @@ import { storage } from "../redux/local_storage";
 
 // containers
 const Auth = lazy(() => import("../containers/Auth"));
-// const Dashboard = lazy(() => import("../containers/Dashboard"));
 const Chat = lazy(() => import("../containers/Chat"));
 class AppConnect extends Component {
   checkAuthentication() {

@@ -152,7 +152,7 @@ class Dashboard extends Component {
                 let scrollPosition = document.getElementById("chat").scrollTop;
                 if (scrollPosition === 0) {
                   this.setState({ data: [...data, ...data] });
-                  document.getElementById("chat").scrollTop = 750;
+                  this.setScroll(750);
                 }
               }}
             >
