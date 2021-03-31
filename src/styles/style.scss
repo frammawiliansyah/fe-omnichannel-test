@@ -1,0 +1,137 @@
+@import "./colors";
+
+// fonts
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+
+html,
+body {
+  // background-color: $white-smoke;
+  background: #4facfe;
+  font-family: "DM Sans", sans-serif;
+  color: $black;
+  height: 100%;
+}
+
+.tblue {
+  color: $blue;
+}
+.btn-primary {
+  background: $blue;
+  border: none;
+  &:hover,
+  &:active,
+  &:focus {
+    background: $blue-dove;
+  }
+}
+.btn-danger {
+  background: $red;
+  border: none;
+  &:hover,
+  &:active,
+  &:focus {
+    background: $red-dove;
+  }
+}
+.navbar {
+  margin: 15px;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 0.5rem;
+  background-color: $white;
+}
+
+.card {
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  border: none;
+}
+.brand {
+  padding: 20px;
+  text-align: center;
+}
+
+#sidebar {
+  min-height: 50vh;
+  width: 30rem;
+  background: $white;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+  border-radius: 1rem;
+}
+
+#sidebar.active {
+  margin-left: -30rem;
+}
+
+.sidebar-link {
+  align-items: center;
+  -webkit-transition: background 0.3s;
+  transition: background 0.3s;
+  padding: 1rem 1.5rem;
+  display: block;
+  text-decoration: none !important;
+  letter-spacing: 0.7px;
+  font-weight: 500;
+}
+
+a.sidebar-link:hover {
+  background: $white;
+}
+
+.active.sidebar-link,
+.active.sidebar-link:hover,
+.active.sidebar-link:focus {
+  background: $blue;
+  color: $white !important;
+  font-weight: 700;
+}
+
+a.sidebar-link.text-muted.btn-logout.active {
+  background: none;
+  color: #ff6c6c !important;
+  font-weight: 500;
+  &:hover {
+    color: #d63939 !important;
+  }
+}
+
+.text-input {
+  font-size: 14px;
+}
+
+input.form-control {
+  color: $black;
+  font-weight: 500;
+  &::placeholder {
+    font-weight: 400;
+    color: $dove;
+  }
+}
+
+label {
+  font-weight: 500;
+}
+
+.hr-light {
+  border-top: 1px solid #e2e2e2e3;
+}
+.sub-nav .nav-item .nav-link {
+  padding: 15px 0;
+}
+.modal-title {
+  font-weight: 700;
+}
+
+.rangeslider-horizontal .rangeslider__fill {
+  background-color: $blue;
+}
+
+.header-blue {
+  background: $blue;
+  color: $white;
+  font-weight: 600;
+  padding: 1rem;
+  border-radius: 0.5rem 0.5rem 0 0 !important;
+  font-size: 20px;
+}
+
