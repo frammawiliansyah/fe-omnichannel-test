@@ -4,7 +4,7 @@ import React, { Component } from "react";
 import { FormGroup, Label } from "reactstrap";
 import { Avatar } from "antd";
 
-export default class ChatDetail extends Component {
+class ChatDetail extends Component {
   render() {
     return (
       <div id="chat-detail-container" className="p-3">
@@ -32,3 +32,5 @@ export default class ChatDetail extends Component {
     );
   }
 }
+
+export default ChatDetail;

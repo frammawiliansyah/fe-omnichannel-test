@@ -1,21 +1,12 @@
 import React, { Component } from "react";
-import {
-  CardBody,
-  Card,
-  Input,
-  CardFooter,
-  Row,
-  Col,
-  Button
-} from "reactstrap";
-import { connect } from "react-redux";
+import { CardBody, Card, Input, CardFooter, Button, Spinner } from "reactstrap";
 import { FiSend } from "react-icons/fi";
 
 // images
 import { Avatar, Space, Badge } from "antd";
 import "./style.scss";
 
-class Dashboard extends Component {
+class ChatMenu extends Component {
   state = {
     scrollPosition: 999999999,
     data: [
@@ -128,13 +119,35 @@ class Dashboard extends Component {
         date: "10:12AM, Today",
         message: "See you"
       }
-    ]
+    ],
+    message: ""
   };
   componentDidMount() {
     this.setScroll(this.state.scrollPosition);
   }
   setScroll(numb) {
     document.getElementById("chat").scrollTop = numb;
+  }
+  setInputHeight() {
+    let { message } = this.state;
+    let inputRows = message.split("\n").length * 24;
+    let inputHeight = inputRows + 20 + "px";
+    if (inputRows > 216) {
+      return {
+        height: "236px",
+        padding: "10px",
+        overflow: "auto",
+        resize: "none",
+        borderRadius: "1rem"
+      };
+    }
+    return {
+      height: inputHeight,
+      padding: "10px",
+      overflow: "hidden",
+      resize: "none",
+      borderRadius: "1rem"
+    };
   }
   render() {
     const data = this.state.data;
@@ -157,12 +170,8 @@ class Dashboard extends Component {
               }}
             >
               <div className="text-center">
-                <Button
-                  hidden={data.length === 0}
-                  color="secondary"
-                  onClick={() => this.setState({ data: [...data, ...data] })}
-                >
-                  Memuat data...
+                <Button color="secondary">
+                  Memuat data... <Spinner size="sm" color="white" />
                 </Button>
               </div>
               {data.map((item, index) => {
@@ -219,32 +228,33 @@ class Dashboard extends Component {
             </ul>
           </div>
         </CardBody>
-        <CardFooter className="py-4">
-          <Row>
-            <Col xs={11}>
-              <Input
-                type="text"
-                placeholder="Type a message"
-                className="input-message"
-                autoFocus
-              />
-            </Col>
-            <Col xs={1}>
-              <Button style={{ borderRadius: "50%" }} color="primary">
-                <FiSend />
-              </Button>
-            </Col>
-          </Row>
+        <CardFooter
+          className="py-4"
+          style={{
+            background: "#fff",
+            borderBottomLeftRadius: "1rem",
+            borderBottomRightRadius: "1rem"
+          }}
+        >
+          <div className="d-flex align-items-stretch">
+            <Input
+              type="textarea"
+              className="m-0 mr-3"
+              autoFocus
+              style={this.setInputHeight()}
+              onChange={e => this.setState({ message: e.target.value })}
+            />
+            <Button
+              style={{ borderRadius: "50%", width: "40px", height: "40px" }}
+              color="primary"
+            >
+              <FiSend />
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     );
   }
 }
 
-function mapStateToProps(state) {
-  return {
-    storeState: state
-  };
-}
-
-export default Dashboard = connect(mapStateToProps)(Dashboard);
+export default ChatMenu;

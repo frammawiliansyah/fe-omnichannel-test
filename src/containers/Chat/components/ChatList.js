@@ -7,9 +7,9 @@ import { FiSearch } from "react-icons/fi";
 // images
 import logo from "../../../assets/images/logo.svg";
 import { Button, Input } from "reactstrap";
-import { Avatar, List, Space } from "antd";
+import { Avatar, List } from "antd";
 
-export default class ChatList extends Component {
+class ChatList extends Component {
   render() {
     const data = [
       {
@@ -50,13 +50,13 @@ export default class ChatList extends Component {
           <img src={logo} alt="" className="img-fluid" />
         </div>
         <div className="list-unstyled components px-2">
-          <div className="text-center">
-            <Space>
-              <Input placeholder="Cari loan Id" />
+          <div className="text-center input-search m-2 p-2">
+            <div className="d-flex align-items-stretch">
+              <Input placeholder="Cari loan Id" className="mr-2" />
               <Button color="primary">
                 <FiSearch />
               </Button>
-            </Space>
+            </div>
           </div>
           <br />
           <List
@@ -92,3 +92,5 @@ export default class ChatList extends Component {
     );
   }
 }
+
+export default ChatList;
