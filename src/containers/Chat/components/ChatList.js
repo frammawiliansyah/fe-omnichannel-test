@@ -8,42 +8,18 @@ import { FiSearch } from "react-icons/fi";
 import logo from "../../../assets/images/logo.svg";
 import { Button, Input } from "reactstrap";
 import { Avatar, List } from "antd";
+import { connect } from "react-redux";
+import { setMessage } from "../../../redux/action/message_action";
 
 class ChatList extends Component {
+  getData = loan_id => {
+    let chat_detail = this.props.chat_list.filter(
+      item => item.loan_id === loan_id
+    )[0];
+    this.props.setMessage({ chat_detail });
+    document.getElementById("chat").scrollTop = 999999999;
+  };
   render() {
-    const data = [
-      {
-        loan_id: 100001,
-        username: "Boby",
-        message: "Hello"
-      },
-      {
-        loan_id: 100002,
-        username: "Rudi",
-        message: "How Are You"
-      },
-      {
-        loan_id: 100002,
-        username: "Mike",
-        message: "Good Morning"
-      },
-      {
-        loan_id: 100004,
-        username: "Jordan",
-        message:
-          "We supply a series of design principles, practical patterns and high quality design resources (Sketch and Axure), to help people create their product prototypes beautifully and efficiently."
-      },
-      {
-        loan_id: 100005,
-        username: "Kylie",
-        message: "Terimakasih"
-      },
-      {
-        loan_id: 100006,
-        username: "Adele",
-        message: "See You"
-      }
-    ];
     return (
       <div id="chat-list-container">
         <div className="brand">
@@ -61,10 +37,13 @@ class ChatList extends Component {
           <br />
           <List
             itemLayout="horizontal"
-            dataSource={data}
+            dataSource={this.props.chat_list}
             renderItem={(item, index) => (
               <div className="chat-list p-2">
-                <Link to={`?loan_id=${item.loan_id}`}>
+                <Link
+                  to={`?loan_id=${item.loan_id}`}
+                  onClick={() => this.getData(item.loan_id)}
+                >
                   <List.Item>
                     <List.Item.Meta
                       avatar={
@@ -92,5 +71,9 @@ class ChatList extends Component {
     );
   }
 }
-
-export default ChatList;
+const mapStateToProps = state => {
+  return {
+    chat_list: state.message.chat_list
+  };
+};
+export default connect(mapStateToProps, { setMessage })(ChatList);

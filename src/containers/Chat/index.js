@@ -5,125 +5,19 @@ import { FiSend } from "react-icons/fi";
 // images
 import { Avatar, Space, Badge } from "antd";
 import "./style.scss";
+// import InfiniteScroll from "react-infinite-scroll-component";
+import { connect } from "react-redux";
+import moment from "moment";
+import { setMessage } from "../../redux/action/message_action";
 
 class ChatMenu extends Component {
   state = {
     scrollPosition: 999999999,
-    data: [
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Lorem ipsum dolor sit amet"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "consectetur adipiscing elit,"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message:
-          "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "consectetur adipiscing elit"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Lorem"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Lorem consectetur adipiscing elit"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "ullamco laboris nisi ut aliquip ex ea commodo"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ut enim ad minim veniam"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Baik"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Hello"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Holla"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ut enim ad minim veniam"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Baik ?"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Yes"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "ullamco laboris nisi"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ok"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "sed do eiusmod tempor"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "See you"
-      }
-    ],
     message: ""
   };
   componentDidMount() {
     this.setScroll(this.state.scrollPosition);
+    this.getData();
   }
   setScroll(numb) {
     document.getElementById("chat").scrollTop = numb;
@@ -149,13 +43,24 @@ class ChatMenu extends Component {
       borderRadius: "1rem"
     };
   }
+  getData() {
+    const loan_id = window.location.search
+      ? parseInt(window.location.search.split("=")[1])
+      : null;
+    let chat_detail = this.props.chat_list.filter(
+      item => item.loan_id === loan_id
+    )[0];
+    this.props.setMessage({ chat_detail });
+  }
+  handleChange = value => {
+    this.props.setMessage(value);
+  };
   render() {
-    const data = this.state.data;
     return (
       <Card>
         <CardBody>
           <div className="text-center p-2">
-            <b>Adele</b> <Badge status="success" />
+            <b>{this.props.chat_detail.username}</b> <Badge status="success" />
           </div>
           <hr />
           <div style={{ height: "78vh" }}>
@@ -163,18 +68,44 @@ class ChatMenu extends Component {
               id="chat"
               onScroll={() => {
                 let scrollPosition = document.getElementById("chat").scrollTop;
-                if (scrollPosition === 0) {
-                  this.setState({ data: [...data, ...data] });
-                  this.setScroll(750);
+                if (
+                  scrollPosition === 0 &&
+                  this.props.message_list.length < 15
+                ) {
+                  setTimeout(async () => {
+                    await this.handleChange({
+                      message_list: [
+                        {
+                          loan_id: 1,
+                          username: "Adele",
+                          date: "2020-06-20 08:03",
+                          message: "Lorem ipsum dolor sit amet"
+                        },
+                        ...this.props.message_list
+                      ]
+                    });
+                    this.setScroll(750);
+                  }, 500);
                 }
               }}
             >
-              <div className="text-center">
+              {/* <InfiniteScroll
+                dataLength={this.props.message_list.length}
+                next={this.fetchMoreData}
+                hasMore={true}
+                loader={<h4>Loading...</h4>}
+                scrollableTarget="chat"
+                inverse={true}
+              > */}
+              <div
+                className="text-center"
+                hidden={this.props.message_list.length >= 15}
+              >
                 <Button color="secondary">
                   Memuat data... <Spinner size="sm" color="white" />
                 </Button>
               </div>
-              {data.map((item, index) => {
+              {this.props.message_list.map((item, index) => {
                 return (
                   <li className={item.loan_id !== 2 ? "you" : "me"}>
                     <Space>
@@ -183,7 +114,8 @@ class ChatMenu extends Component {
                         style={{
                           visibility:
                             index > 0 &&
-                            data[index - 1].loan_id === item.loan_id
+                            this.props.message_list[index - 1].loan_id ===
+                              item.loan_id
                               ? "hidden"
                               : "visible"
                         }}
@@ -201,7 +133,9 @@ class ChatMenu extends Component {
                                 : "status blue mr-2"
                             }
                           ></span>
-                          <h3>{item.date}</h3>
+                          <h3>
+                            {moment(item.date).format("DD-MM-YYYY, h:mm:ss a")}
+                          </h3>
                         </div>
                         <div>
                           <div className="message">{item.message}</div>
@@ -212,19 +146,21 @@ class ChatMenu extends Component {
                         style={{
                           visibility:
                             index > 0 &&
-                            data[index - 1].loan_id === item.loan_id
+                            this.props.message_list[index - 1].loan_id ===
+                              item.loan_id
                               ? "hidden"
                               : "visible"
                         }}
                       >
                         <Avatar size={50}>
-                          <b>{item.username.split("")[0]}</b>
+                          <b>{this.props.username.split("")[0]}</b>
                         </Avatar>
                       </div>
                     </Space>
                   </li>
                 );
               })}
+              {/* </InfiniteScroll> */}
             </ul>
           </div>
         </CardBody>
@@ -256,5 +192,14 @@ class ChatMenu extends Component {
     );
   }
 }
-
-export default ChatMenu;
+const mapStateToProps = state => {
+  return {
+    message_list: state.message.message_list,
+    chat_list: state.message.chat_list,
+    chat_detail: state.message.chat_detail,
+    username: state.user.account
+  };
+};
+export default connect(mapStateToProps, {
+  setMessage
+})(ChatMenu);
