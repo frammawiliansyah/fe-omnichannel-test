@@ -150,7 +150,8 @@ class ChatMenu extends Component {
                       hidden={
                         (this.props.message_list.length <= 15 &&
                           this.props.load_message) ||
-                        (this.state.isScrollTop && this.props.load_message)
+                        (this.state.isScrollTop && this.props.load_message) ||
+                        this.props.message_list.length >= 15
                       }
                     >
                       <Button color="secondary">
