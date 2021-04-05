@@ -79,56 +79,9 @@ const initState = {
     message: null,
     va_number: null
   },
-  message_list: [
-    {
-      loan_id: 1,
-      username: "Adele",
-      date: "2020-06-20 08:03",
-      message: "Lorem ipsum dolor sit amet"
-    },
-    {
-      loan_id: 2,
-      username: "Boby",
-      date: "2020-06-20 08:04",
-      message: "consectetur adipiscing elit"
-    },
-    {
-      loan_id: 2,
-      username: "Boby",
-      date: "2020-06-20 08:06",
-      message: "consectetur adipiscing"
-    },
-    {
-      loan_id: 1,
-      username: "Adele",
-      date: "2020-06-20 08:08",
-      message: "Lorem"
-    },
-    {
-      loan_id: 2,
-      username: "Boby",
-      date: "2020-06-20 08:09",
-      message: "consectetur adipiscing elit"
-    },
-    {
-      loan_id: 2,
-      username: "Boby",
-      date: "2020-06-20 09:06",
-      message: "consectetur adipiscing"
-    },
-    {
-      loan_id: 1,
-      username: "Adele",
-      date: "2020-06-20 10:08",
-      message: "Lorem"
-    },
-    {
-      loan_id: 1,
-      username: "Adele",
-      date: "2020-06-20 10:09",
-      message: "Lorem"
-    }
-  ]
+  message_list: [],
+  load_message: false,
+  load_chat: false
 };
 
 export const message = (state = initState, action) => {

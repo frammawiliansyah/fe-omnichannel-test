@@ -12,7 +12,7 @@ import {
 import { FiSend } from "react-icons/fi";
 
 // images
-import { Avatar, Space, Badge } from "antd";
+import { Avatar, Space } from "antd";
 import "./style.scss";
 import { connect } from "react-redux";
 import moment from "moment";
@@ -25,7 +25,8 @@ class ChatMenu extends Component {
   state = {
     scrollPosition: 999999999,
     message: "",
-    loan_id: null
+    loan_id: null,
+    isScrollTop: false
   };
   componentDidUpdate() {
     let loan_id = this.props.chat_detail.loan_id;
@@ -94,8 +95,7 @@ class ChatMenu extends Component {
             <Card>
               <CardBody>
                 <div className="text-center p-2">
-                  <b>{this.props.chat_detail.username}</b>{" "}
-                  <Badge status="success" />
+                  <b>{this.props.chat_detail.username}</b>
                 </div>
                 <hr />
                 <div style={{ height: "75vh" }}>
@@ -110,6 +110,7 @@ class ChatMenu extends Component {
                         scrollPosition === 0 &&
                         this.props.message_list.length < 15
                       ) {
+                        this.setState({ isScrollTop: true });
                         setTimeout(async () => {
                           await this.handleChange({
                             message_list: [
@@ -127,12 +128,30 @@ class ChatMenu extends Component {
                               scrollHeight
                           );
                         }, 500);
+                      } else {
+                        this.setState({ isScrollTop: false });
                       }
                     }}
                   >
                     <div
+                      className="text-center p-2"
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)"
+                      }}
+                      hidden={!this.props.load_message}
+                    >
+                      Memuat data... <Spinner size="sm" color="primary" />
+                    </div>
+                    <div
                       className="text-center"
-                      hidden={this.props.message_list.length >= 15}
+                      hidden={
+                        (this.props.message_list.length <= 15 &&
+                          this.props.load_message) ||
+                        (this.state.isScrollTop && this.props.load_message)
+                      }
                     >
                       <Button color="secondary">
                         Memuat data... <Spinner size="sm" color="white" />
@@ -245,7 +264,8 @@ const mapStateToProps = state => {
     message_list: state.message.message_list,
     chat_list: state.message.chat_list,
     chat_detail: state.message.chat_detail,
-    username: state.user.account
+    username: state.user.account,
+    load_message: state.message.load_message
   };
 };
 export default connect(mapStateToProps, {

@@ -5,18 +5,89 @@ import { FiSearch } from "react-icons/fi";
 
 // images
 import logo from "../../../assets/images/logo.svg";
-import { Button, Input } from "reactstrap";
+import { Button, Input, Spinner } from "reactstrap";
 import { Avatar, List } from "antd";
 import { connect } from "react-redux";
 import { setMessage } from "../../../redux/action/message_action";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 class ChatList extends Component {
-  getData = loan_id => {
+  getData = async loan_id => {
+    let message_list = [];
     let chat_detail = this.props.chat_list.filter(
       item => item.loan_id === loan_id
     )[0];
-    this.props.setMessage({ chat_detail });
+    message_list = [
+      {
+        loan_id: 1,
+        username: "Adele",
+        date: "2020-06-20 08:03",
+        message: "Lorem ipsum dolor sit amet"
+      },
+      {
+        loan_id: 2,
+        username: "Boby",
+        date: "2020-06-20 08:04",
+        message: "consectetur adipiscing elit"
+      },
+      {
+        loan_id: 2,
+        username: "Boby",
+        date: "2020-06-20 08:06",
+        message: "consectetur adipiscing"
+      },
+      {
+        loan_id: 1,
+        username: "Adele",
+        date: "2020-06-20 08:08",
+        message: "Lorem"
+      },
+      {
+        loan_id: 2,
+        username: "Boby",
+        date: "2020-06-20 08:09",
+        message: "consectetur adipiscing elit"
+      },
+      {
+        loan_id: 2,
+        username: "Boby",
+        date: "2020-06-20 09:06",
+        message: "consectetur adipiscing"
+      },
+      {
+        loan_id: 1,
+        username: "Adele",
+        date: "2020-06-20 10:08",
+        message: "Lorem"
+      },
+      {
+        loan_id: 1,
+        username: "Adele",
+        date: "2020-06-20 10:09",
+        message: "Lorem"
+      }
+    ];
+    this.props.setMessage({ load_message: true, message_list: [] });
+    setTimeout(async () => {
+      await this.props.setMessage({ chat_detail, message_list });
+      this.props.setMessage({ load_message: false });
+    }, 500);
   };
+  getChatList() {
+    setTimeout(() => {
+      this.props.setMessage({
+        chat_list: [
+          ...this.props.chat_list,
+          {
+            loan_id: 100001,
+            username: "Boby",
+            message: "Hello",
+            va_number: 111
+          }
+        ]
+      });
+    }, 1500);
+  }
   render() {
     return (
       <div id="chat-list-container">
@@ -33,38 +104,50 @@ class ChatList extends Component {
             </div>
           </div>
           <br />
-          <List
-            style={{ overflow: "auto", height: "74vh" }}
-            itemLayout="horizontal"
-            dataSource={this.props.chat_list}
-            renderItem={(item, index) => (
-              <div className="chat-list p-2">
-                <div
-                  style={{ cursor: "pointer" }}
-                  onClick={() => this.getData(item.loan_id)}
-                >
-                  <List.Item>
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar size={50}>
-                          <b>
-                            {item.username ? item.username.split("")[0] : null}
-                          </b>
-                        </Avatar>
-                      }
-                      title={item.username}
-                      description={
-                        item.message.split("").length > 10
-                          ? item.message.substring(0, 10) + "..."
-                          : item.message
-                      }
-                    />
-                    <div>#{item.loan_id}</div>
-                  </List.Item>
+          <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
+            <InfiniteScroll
+              dataLength={this.props.chat_list}
+              next={() => this.getChatList()}
+              hasMore={true}
+              loader={
+                <div className="text-center p-2">
+                  Memuat data... <Spinner size="sm" color="primary" />
                 </div>
-              </div>
-            )}
-          />
+              }
+              scrollableTarget="chat-history"
+              style={{ overflow: "hidden" }}
+            >
+              {this.props.chat_list.map((item, index) => (
+                <div className="chat-list p-2">
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={() => this.getData(item.loan_id)}
+                  >
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar size={50}>
+                            <b>
+                              {item.username
+                                ? item.username.split("")[0]
+                                : null}
+                            </b>
+                          </Avatar>
+                        }
+                        title={item.username}
+                        description={
+                          item.message.split("").length > 10
+                            ? item.message.substring(0, 10) + "..."
+                            : item.message
+                        }
+                      />
+                      <div>#{item.loan_id}</div>
+                    </List.Item>
+                  </div>
+                </div>
+              ))}
+            </InfiniteScroll>
+          </div>
         </div>
       </div>
     );
