@@ -11,7 +11,8 @@ import {
   Button,
   Alert,
   CardImg,
-  Card
+  Card,
+  Spinner
 } from "reactstrap";
 import "./style.scss";
 
@@ -30,19 +31,22 @@ class Auth extends Component {
       username: "",
       password: "",
       message: "Nama pengguna atau kata sandi salah, silahkan coba kembali!",
-      isHidden: true
+      isHidden: true,
+      isLoading: false
     };
   }
 
-  submitForm = e => {
+  submitForm = async e => {
+    this.setState({ isLoading: true, isHidden: true });
     e.preventDefault();
     const { username, password } = this.state;
-    this.props.login(
+    await this.props.login(
       username,
       password,
       this.submitFormSuccess,
       this.submitFormFailed
     );
+    this.setState({ isLoading: false });
   };
 
   submitFormSuccess = () => {
@@ -120,8 +124,15 @@ class Auth extends Component {
                             block
                             className="font-weight-bold"
                             onClick={this.submitForm}
+                            disabled={this.state.isLoading}
                           >
-                            MASUK
+                            {this.state.isLoading ? (
+                              <div>
+                                MASUK <Spinner size="sm" />
+                              </div>
+                            ) : (
+                              "MASUK"
+                            )}
                           </Button>
                         </FormGroup>
                       </Form>

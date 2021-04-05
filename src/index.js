@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 // style
 import "./styles/style.scss";
+import "./containers/Chat/style.scss";
 
 import App from "./App";
 import store from "./redux/store";

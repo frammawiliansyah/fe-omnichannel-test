@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Link } from "react-router-dom";
 
 // icons
 import { FiSearch } from "react-icons/fi";
@@ -17,7 +16,6 @@ class ChatList extends Component {
       item => item.loan_id === loan_id
     )[0];
     this.props.setMessage({ chat_detail });
-    document.getElementById("chat").scrollTop = 999999999;
   };
   render() {
     return (
@@ -36,12 +34,13 @@ class ChatList extends Component {
           </div>
           <br />
           <List
+            style={{ overflow: "auto", height: "74vh" }}
             itemLayout="horizontal"
             dataSource={this.props.chat_list}
             renderItem={(item, index) => (
               <div className="chat-list p-2">
-                <Link
-                  to={`?loan_id=${item.loan_id}`}
+                <div
+                  style={{ cursor: "pointer" }}
                   onClick={() => this.getData(item.loan_id)}
                 >
                   <List.Item>
@@ -62,7 +61,7 @@ class ChatList extends Component {
                     />
                     <div>#{item.loan_id}</div>
                   </List.Item>
-                </Link>
+                </div>
               </div>
             )}
           />
