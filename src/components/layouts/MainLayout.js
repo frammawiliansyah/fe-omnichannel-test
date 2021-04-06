@@ -1,9 +1,6 @@
 import React from "react";
 import { Container } from "reactstrap";
 import ChatList from "../../containers/Chat/components/ChatList";
-import ChatDetail from "../../containers/Chat/components/ChatDetail";
-
-import Navbar from "./Navbar";
 
 class MainLayout extends React.Component {
   constructor(props) {
@@ -26,11 +23,6 @@ class MainLayout extends React.Component {
           <ChatList />
           <div id="content" className="w-100">
             <Container fluid>{children}</Container>
-          </div>
-          <div>
-            <Navbar />
-            <hr />
-            <ChatDetail />
           </div>
         </div>
       </main>

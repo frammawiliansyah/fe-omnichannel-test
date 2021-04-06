@@ -4,247 +4,271 @@ import {
   Card,
   Input,
   CardFooter,
+  Button,
+  Spinner,
   Row,
-  Col,
-  Button
+  Col
 } from "reactstrap";
-import { connect } from "react-redux";
 import { FiSend } from "react-icons/fi";
 
 // images
-import { Avatar, Space, Badge } from "antd";
+import { Avatar, Space } from "antd";
 import "./style.scss";
+import { connect } from "react-redux";
+import moment from "moment";
+import { setMessage } from "../../redux/action/message_action";
+import ChatDetail from "./components/ChatDetail";
+import Navbar from "../../components/layouts/Navbar";
+import Bg1 from "../../assets/images/web-chat.svg";
 
-class Dashboard extends Component {
+class ChatMenu extends Component {
   state = {
     scrollPosition: 999999999,
-    data: [
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Lorem ipsum dolor sit amet"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "consectetur adipiscing elit,"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message:
-          "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "consectetur adipiscing elit"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Lorem"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Lorem consectetur adipiscing elit"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "ullamco laboris nisi ut aliquip ex ea commodo"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ut enim ad minim veniam"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Baik"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Hello"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Holla"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ut enim ad minim veniam"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Baik ?"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "Yes"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "ullamco laboris nisi"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "Ok"
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "10:12AM, Today",
-        message: "sed do eiusmod tempor"
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "10:12AM, Today",
-        message: "See you"
-      }
-    ]
+    message: "",
+    loan_id: null,
+    isScrollTop: false
   };
-  componentDidMount() {
-    this.setScroll(this.state.scrollPosition);
+  componentDidUpdate() {
+    let loan_id = this.props.chat_detail.loan_id;
+    if (this.state.loan_id !== loan_id) {
+      this.getData();
+      document.getElementById("chat").scrollTop = 999999999;
+      this.setState({ loan_id });
+    }
   }
   setScroll(numb) {
     document.getElementById("chat").scrollTop = numb;
   }
+  setInputHeight() {
+    let { message } = this.state;
+    let inputRows = message.split("\n").length * 24;
+    let inputHeight = inputRows + 20 + "px";
+    if (inputRows > 216) {
+      return {
+        height: "236px",
+        padding: "10px",
+        overflow: "auto",
+        resize: "none",
+        borderRadius: "1rem"
+      };
+    }
+    return {
+      height: inputHeight,
+      padding: "10px",
+      overflow: "hidden",
+      resize: "none",
+      borderRadius: "1rem"
+    };
+  }
+  getData() {
+    const loan_id = this.props.chat_detail.loan_id;
+    let chat_detail = this.props.chat_detail;
+    chat_detail = this.props.chat_list.filter(
+      item => item.loan_id === loan_id
+    )[0];
+    if (chat_detail) {
+      this.props.setMessage({ chat_detail });
+    }
+  }
+  handleChange = value => {
+    this.props.setMessage(value);
+  };
   render() {
-    const data = this.state.data;
     return (
-      <Card>
-        <CardBody>
-          <div className="text-center p-2">
-            <b>Adele</b> <Badge status="success" />
-          </div>
-          <hr />
-          <div style={{ height: "78vh" }}>
-            <ul
-              id="chat"
-              onScroll={() => {
-                let scrollPosition = document.getElementById("chat").scrollTop;
-                if (scrollPosition === 0) {
-                  this.setState({ data: [...data, ...data] });
-                  this.setScroll(750);
-                }
-              }}
-            >
-              <div className="text-center">
-                <Button
-                  hidden={data.length === 0}
-                  color="secondary"
-                  onClick={() => this.setState({ data: [...data, ...data] })}
-                >
-                  Memuat data...
-                </Button>
-              </div>
-              {data.map((item, index) => {
-                return (
-                  <li className={item.loan_id !== 2 ? "you" : "me"}>
-                    <Space>
-                      <div
-                        hidden={item.loan_id === 2}
-                        style={{
-                          visibility:
-                            index > 0 &&
-                            data[index - 1].loan_id === item.loan_id
-                              ? "hidden"
-                              : "visible"
-                        }}
-                      >
-                        <Avatar size={50}>
-                          <b>{item.username.split("")[0]}</b>
-                        </Avatar>
-                      </div>
-                      <div>
-                        <div className="entete">
-                          <span
-                            className={
-                              item.loan_id !== 2
-                                ? "status green mr-2"
-                                : "status blue mr-2"
-                            }
-                          ></span>
-                          <h3>{item.date}</h3>
-                        </div>
-                        <div>
-                          <div className="message">{item.message}</div>
-                        </div>
-                      </div>
-                      <div
-                        hidden={item.loan_id !== 2}
-                        style={{
-                          visibility:
-                            index > 0 &&
-                            data[index - 1].loan_id === item.loan_id
-                              ? "hidden"
-                              : "visible"
-                        }}
-                      >
-                        <Avatar size={50}>
-                          <b>{item.username.split("")[0]}</b>
-                        </Avatar>
-                      </div>
-                    </Space>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </CardBody>
-        <CardFooter className="py-4">
-          <Row>
-            <Col xs={11}>
-              <Input
-                type="text"
-                placeholder="Type a message"
-                className="input-message"
-                autoFocus
+      <div>
+        <div hidden={this.props.chat_detail.loan_id !== null}>
+          <Navbar />
+          <br />
+          <Card>
+            <CardBody className="text-center">
+              <img
+                src={Bg1}
+                width="84%"
+                className="m-auto"
+                alt="bg-dashboard"
               />
-            </Col>
-            <Col xs={1}>
-              <Button style={{ borderRadius: "50%" }} color="primary">
-                <FiSend />
-              </Button>
-            </Col>
-          </Row>
-        </CardFooter>
-      </Card>
+            </CardBody>
+          </Card>
+        </div>
+        <Row hidden={this.props.chat_detail.loan_id === null}>
+          <Col sm={8}>
+            <Card>
+              <CardBody>
+                <div className="text-center p-2">
+                  <b>{this.props.chat_detail.username}</b>
+                </div>
+                <hr />
+                <div style={{ height: "75vh" }}>
+                  <ul
+                    id="chat"
+                    onScroll={() => {
+                      let scrollPosition = document.getElementById("chat")
+                        .scrollTop;
+                      let scrollHeight = document.getElementById("chat")
+                        .scrollHeight;
+                      if (
+                        scrollPosition === 0 &&
+                        this.props.message_list.length < 15
+                      ) {
+                        this.setState({ isScrollTop: true });
+                        setTimeout(async () => {
+                          await this.handleChange({
+                            message_list: [
+                              {
+                                loan_id: 1,
+                                username: "Adele",
+                                date: "2020-06-20 08:03",
+                                message: "Lorem ipsum dolor sit amet"
+                              },
+                              ...this.props.message_list
+                            ]
+                          });
+                          this.setScroll(
+                            document.getElementById("chat").scrollHeight -
+                              scrollHeight
+                          );
+                        }, 500);
+                      } else {
+                        this.setState({ isScrollTop: false });
+                      }
+                    }}
+                  >
+                    <div
+                      className="text-center p-2"
+                      style={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)"
+                      }}
+                      hidden={!this.props.load_message}
+                    >
+                      Memuat data... <Spinner size="sm" color="primary" />
+                    </div>
+                    <div
+                      className="text-center"
+                      hidden={
+                        (this.props.message_list.length <= 15 &&
+                          this.props.load_message) ||
+                        (this.state.isScrollTop && this.props.load_message) ||
+                        this.props.message_list.length >= 15
+                      }
+                    >
+                      <Button color="secondary">
+                        Memuat data... <Spinner size="sm" color="white" />
+                      </Button>
+                    </div>
+                    {this.props.message_list.map((item, index) => {
+                      return (
+                        <li className={item.loan_id !== 2 ? "you" : "me"}>
+                          <Space>
+                            <div
+                              hidden={item.loan_id === 2}
+                              style={{
+                                visibility:
+                                  index > 0 &&
+                                  this.props.message_list[index - 1].loan_id ===
+                                    item.loan_id
+                                    ? "hidden"
+                                    : "visible"
+                              }}
+                            >
+                              <Avatar size={50}>
+                                <b>{item.username.split("")[0]}</b>
+                              </Avatar>
+                            </div>
+                            <div>
+                              <div className="entete">
+                                <span
+                                  className={
+                                    item.loan_id !== 2
+                                      ? "status green mr-2"
+                                      : "status blue mr-2"
+                                  }
+                                ></span>
+                                <h3>
+                                  {moment(item.date).format(
+                                    "DD-MM-YYYY, h:mm:ss a"
+                                  )}
+                                </h3>
+                              </div>
+                              <div>
+                                <div className="message">{item.message}</div>
+                              </div>
+                            </div>
+                            <div
+                              hidden={item.loan_id !== 2}
+                              style={{
+                                visibility:
+                                  index > 0 &&
+                                  this.props.message_list[index - 1].loan_id ===
+                                    item.loan_id
+                                    ? "hidden"
+                                    : "visible"
+                              }}
+                            >
+                              <Avatar size={50}>
+                                <b>{this.props.username.split("")[0]}</b>
+                              </Avatar>
+                            </div>
+                          </Space>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </CardBody>
+              <CardFooter
+                className="py-4"
+                style={{
+                  background: "#fff",
+                  borderBottomLeftRadius: "1rem",
+                  borderBottomRightRadius: "1rem"
+                }}
+              >
+                <div className="d-flex align-items-stretch">
+                  <Input
+                    type="textarea"
+                    className="m-0 mr-3"
+                    autoFocus
+                    style={this.setInputHeight()}
+                    onChange={e => this.setState({ message: e.target.value })}
+                  />
+                  <Button
+                    style={{
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px"
+                    }}
+                    color="primary"
+                  >
+                    <FiSend />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          </Col>
+          <Col sm={4}>
+            <div>
+              <Navbar />
+              <hr />
+              <ChatDetail />
+            </div>
+          </Col>
+        </Row>
+      </div>
     );
   }
 }
-
-function mapStateToProps(state) {
+const mapStateToProps = state => {
   return {
-    storeState: state
+    message_list: state.message.message_list,
+    chat_list: state.message.chat_list,
+    chat_detail: state.message.chat_detail,
+    username: state.user.account,
+    load_message: state.message.load_message
   };
-}
-
-export default Dashboard = connect(mapStateToProps)(Dashboard);
+};
+export default connect(mapStateToProps, {
+  setMessage
+})(ChatMenu);
