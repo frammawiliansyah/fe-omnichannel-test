@@ -148,10 +148,8 @@ class ChatMenu extends Component {
                     <div
                       className="text-center"
                       hidden={
-                        (this.props.message_list.length <= 15 &&
-                          this.props.load_message) ||
-                        (this.state.isScrollTop && this.props.load_message) ||
-                        this.props.message_list.length >= 15
+                        this.props.load_message ||
+                        (!this.props.load_message && !this.state.isScrollTop)
                       }
                     >
                       <Button color="secondary">
@@ -231,6 +229,7 @@ class ChatMenu extends Component {
                     type="textarea"
                     className="m-0 mr-3"
                     autoFocus
+                    value={this.state.message}
                     style={this.setInputHeight()}
                     onChange={e => this.setState({ message: e.target.value })}
                   />
@@ -241,6 +240,23 @@ class ChatMenu extends Component {
                       height: "40px"
                     }}
                     color="primary"
+                    onClick={async () => {
+                      if (this.state.message !== "") {
+                        await this.handleChange({
+                          message_list: [
+                            ...this.props.message_list,
+                            {
+                              loan_id: 2,
+                              username: this.props.username,
+                              date: moment().format("YYYY-MM-DD hh:mm:ss"),
+                              message: this.state.message
+                            }
+                          ]
+                        });
+                        await this.setState({ message: "" });
+                        this.setScroll(999999999);
+                      }
+                    }}
                   >
                     <FiSend />
                   </Button>
