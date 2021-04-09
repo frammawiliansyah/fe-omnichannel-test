@@ -12,6 +12,9 @@ import { setMessage } from "../../../redux/action/message_action";
 import InfiniteScroll from "react-infinite-scroll-component";
 
 class ChatList extends Component {
+  state = {
+    loan_id: null
+  };
   getData = async loan_id => {
     let message_list = [];
     let chat_detail = this.props.chat_list.filter(
@@ -88,6 +91,16 @@ class ChatList extends Component {
       });
     }, 1500);
   }
+  onSearch() {
+    let { loan_id } = this.state;
+    if (loan_id) {
+      this.setState({ loan_id });
+      let new_chat_list = this.props.chat_list.filter(
+        item => item.loan_id === parseInt(loan_id)
+      );
+      this.props.setMessage({ chat_list: [...new_chat_list] });
+    }
+  }
   render() {
     return (
       <div id="chat-list-container">
@@ -97,8 +110,14 @@ class ChatList extends Component {
         <div className="list-unstyled components px-2">
           <div className="text-center input-search m-2 p-2">
             <div className="d-flex align-items-stretch">
-              <Input placeholder="Cari loan Id" className="mr-2" />
-              <Button color="primary">
+              <Input
+                placeholder="Cari loan Id"
+                className="mr-2"
+                type="number"
+                value={this.state.loan_id}
+                onChange={e => this.setState({ loan_id: e.target.value })}
+              />
+              <Button color="primary" onClick={() => this.onSearch()}>
                 <FiSearch />
               </Button>
             </div>
@@ -108,7 +127,10 @@ class ChatList extends Component {
             <InfiniteScroll
               dataLength={this.props.chat_list}
               next={() => this.getChatList()}
-              hasMore={true}
+              hasMore={
+                this.props.chat_list.length > 0 &&
+                this.props.chat_list.length <= 20
+              }
               loader={
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
