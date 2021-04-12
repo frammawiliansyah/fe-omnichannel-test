@@ -103,7 +103,7 @@ class ChatList extends Component {
   }
   render() {
     return (
-      <div id="chat-list-container">
+      <div className="chat-list-container">
         <div className="brand">
           <img src={logo} alt="" className="img-fluid" />
         </div>
@@ -112,7 +112,7 @@ class ChatList extends Component {
             <div className="d-flex align-items-stretch">
               <Input
                 placeholder="Cari loan Id"
-                className="mr-2"
+                className="mr-2 custom-input-theme"
                 type="number"
                 value={this.state.loan_id}
                 onChange={e => this.setState({ loan_id: e.target.value })}

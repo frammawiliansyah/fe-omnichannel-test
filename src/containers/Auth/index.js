@@ -18,7 +18,7 @@ import "./style.scss";
 
 // images
 import ImageLogin from "../../assets/images/art-login.svg";
-import logoWhite from "../../assets/images/logo-white.svg";
+import logo from "../../assets/images/logo.svg";
 
 import { connect } from "react-redux";
 import { login } from "../../redux/action/user_action";
@@ -69,7 +69,7 @@ class Auth extends Component {
               <Card>
                 <CardBody>
                   <div className="text-center mb-2">
-                    <img src={logoWhite} alt="Logo" />
+                    <img src={logo} alt="Logo" />
                   </div>
                   <div>
                     <div style={{ textAlign: "center" }}>
@@ -81,7 +81,7 @@ class Auth extends Component {
                       />
                     </div>
                     <CardBody>
-                      <h3 className="font-weight-bold mt-2 text-center">
+                      <h3 className="font-weight-bold custom-txt-color mt-2 text-center">
                         Dasbor Chat
                       </h3>
                       <Form className="mt-4" onSubmit={this.submitForm}>
@@ -93,6 +93,7 @@ class Auth extends Component {
                             name="username"
                             id="submitFormUsername"
                             placeholder="Nama Pengguna"
+                            className="custom-input-theme"
                             value={this.state.email}
                             onChange={e =>
                               this.handleChange("username", e.target.value)
@@ -107,6 +108,7 @@ class Auth extends Component {
                             name="password"
                             id="submitFormPassword"
                             placeholder="Kata Sandi"
+                            className="custom-input-theme"
                             value={this.state.password}
                             onChange={e =>
                               this.handleChange("password", e.target.value)
