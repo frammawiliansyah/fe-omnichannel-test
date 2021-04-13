@@ -8,7 +8,7 @@ import { connect } from "react-redux";
 class ChatDetail extends Component {
   render() {
     return (
-      <div id="chat-detail-container" className="p-3">
+      <div className="chat-detail-container p-3">
         <div className="text-center py-3">
           <Avatar size={100}>
             <b>

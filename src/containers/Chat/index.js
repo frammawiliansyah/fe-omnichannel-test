@@ -20,6 +20,7 @@ import { setMessage } from "../../redux/action/message_action";
 import ChatDetail from "./components/ChatDetail";
 import Navbar from "../../components/layouts/Navbar";
 import Bg1 from "../../assets/images/web-chat.svg";
+import Bg2 from "../../assets/images/web-chat-dark.svg";
 
 class ChatMenu extends Component {
   state = {
@@ -82,7 +83,7 @@ class ChatMenu extends Component {
           <Card>
             <CardBody className="text-center">
               <img
-                src={Bg1}
+                src={this.props.theme === "dark" ? Bg2 : Bg1}
                 width="84%"
                 className="m-auto"
                 alt="bg-dashboard"
@@ -226,8 +227,9 @@ class ChatMenu extends Component {
               >
                 <div className="d-flex align-items-stretch">
                   <Input
+                    placeholder="Type a message here..."
                     type="textarea"
-                    className="m-0 mr-3"
+                    className="m-0 mr-3 custom-input-theme"
                     autoFocus
                     value={this.state.message}
                     style={this.setInputHeight()}
@@ -264,7 +266,7 @@ class ChatMenu extends Component {
               </CardFooter>
             </Card>
           </Col>
-          <Col sm={4}>
+          <Col sm={4} className="p-0">
             <div>
               <Navbar />
               <hr />
@@ -282,7 +284,8 @@ const mapStateToProps = state => {
     chat_list: state.message.chat_list,
     chat_detail: state.message.chat_detail,
     username: state.user.account,
-    load_message: state.message.load_message
+    load_message: state.message.load_message,
+    theme: state.user.theme
   };
 };
 export default connect(mapStateToProps, {

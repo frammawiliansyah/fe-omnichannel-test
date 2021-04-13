@@ -55,6 +55,8 @@
 	display:inline-block;
 	text-align:left;
 	border-radius: 1rem;
+	white-space: pre;
+	word-wrap: break-word;
 }
 #chat .me{
 	text-align:right;
@@ -79,33 +81,33 @@
 		border-color: transparent transparent #6fbced transparent;
 		margin-right:375px;
 }
-#chat-list-container{
+.chat-list-container{
     min-height: 50vh;
     width: 32rem;
-    background: $white;
+    // background: $white;
     box-shadow: 0 14px 20px 0 rgba(0, 0, 0, 0.05);
-    transition: all 0.2s;
+    // transition: all 0.2s;
     border-radius: 1rem;
 }
-#chat-detail-container{
+.chat-detail-container{
 	min-height: 50vh;
 	// width: 32rem;
-	background: $white;
+	// background: $white;
 	box-shadow: 0 14px 20px 0 rgba(0, 0, 0, 0.05);
-	transition: all 0.2s;
+	// transition: all 0.2s;
 	border-radius: 1rem;
 }
 .chat-list{
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
   border-radius: 1rem;
-  background-color: $white;
+  // background-color: $white;
 	margin: 10px;
 }
 .chat-list:hover{
 	margin: 0
 }
 .input-search{
-	background: white;
+	// background: white;
 	border-radius: 1rem;
 	box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
 }

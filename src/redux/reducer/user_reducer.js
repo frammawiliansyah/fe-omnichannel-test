@@ -3,7 +3,8 @@ const initState = {
   token: null,
   account: null,
   admin_user_id: null,
-  role: null
+  role: null,
+  theme: "light"
 };
 
 export const user = (state = initState, action) => {

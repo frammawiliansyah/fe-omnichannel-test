@@ -1,9 +1,11 @@
 import React from "react";
-import { Navbar, Row, Col, Input } from "reactstrap";
+import { Navbar, Row, Col, Input, Button } from "reactstrap";
 
 import { connect } from "react-redux";
 import { Avatar, Space } from "antd";
 import { AiOutlineLogout } from "react-icons/ai";
+import { setStateUser } from "../../redux/action/user_action";
+import { FiMoon, FiSun } from "react-icons/fi";
 
 class Header extends React.Component {
   constructor(props) {
@@ -25,6 +27,23 @@ class Header extends React.Component {
     window.location.reload(true);
   }
 
+  switchTheme() {
+    const body = document.body;
+    const lightTheme = "light";
+    const darkTheme = "dark";
+    let theme = this.props.user.theme;
+    if (theme === darkTheme) {
+      body.classList.replace(darkTheme, lightTheme);
+      theme = lightTheme;
+    } else {
+      body.classList.replace(lightTheme, darkTheme);
+      theme = darkTheme;
+    }
+    this.props.setStateUser({
+      theme
+    });
+  }
+
   render() {
     return (
       <div>
@@ -32,6 +51,25 @@ class Header extends React.Component {
           <Row style={{ width: "120%" }}>
             <Col md="12" className="text-right">
               <Space size={24}>
+                <Button
+                  style={{
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    background:
+                      this.props.user.theme !== "dark" ? "#5a6268" : "#ffc107"
+                  }}
+                  color={
+                    this.props.user.theme !== "dark" ? "#5a6268" : "warning"
+                  }
+                  onClick={() => this.switchTheme()}
+                >
+                  {this.props.user.theme !== "dark" ? (
+                    <FiMoon className="text-white" />
+                  ) : (
+                    <FiSun className="text-white" />
+                  )}
+                </Button>
                 <Input type="select">
                   <option value={1}>WhatsApp</option>
                 </Input>
@@ -71,4 +109,4 @@ const mapStateToProps = state => ({
   user: state.user
 });
 
-export default connect(mapStateToProps)(Header);
+export default connect(mapStateToProps, { setStateUser })(Header);

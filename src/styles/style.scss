@@ -2,14 +2,97 @@
 
 // fonts
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap");
+:root {
+  --light: #ffffff;
+  --dark: #1e2128;
+  --light-card: #ffffff;
+  --dark-card: #242632;
+  --light-border: #e4e4e4;
+  --dark-border: #33353c;
+  --light-input-bg: #f1f1f1;
+  --dark-input-bg: #34353a;
+  --light-input-color: var(--dark-input-bg);
+  --dark-input-color: var(--light-input-bg)
+}
+body.light {
+  --background-color: var(--light);
+  --text-color: var(--dark);
+  --card-color: var(--light-card);
+  --border-color: var(--light-border);
+  --input-bg: var(--light-input-bg);
+  --input-color: var(--light-input-color);
+  --chat-list-bg: var(--light);
+  --auth-bg: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+}
+body.dark {
+  --background-color: var(--dark);
+  --text-color: var(--light);
+  --card-color: var(--dark-card);
+  --border-color: var(--dark-border);
+  --input-bg: var(--dark-input-bg);
+  --input-color: var(--dark-input-color);
+  --chat-list-bg: #33353c;
+  --auth-bg: var(--dark);
+}
+.auth {
+  padding-top: 2%;
+  height: 100%;
+  background-image: var(--auth-bg);
+}
+.custom-txt-color{
+  color: var(--text-color);
+}
+.navbar,
+.card,
+.card-body,
+.card-footer,
+.chat-list-container,
+.chat-detail-container{
+  background: var(--background-color) !important;
+  transition: background 0.3s ease-in-out, color 0.6s ease-in-out;
+}
+hr{
+  background: var(--border-color);
+}
+#chat{
+  border: none !important;
+}
+.card-footer{
+  border-top: 1px solid var(--border-color);
+}
+.ant-list-item,
+.ant-list-item-meta-title,
+.ant-list-item-meta-description{
+  color: var(--text-color) !important;
+}
+.chat-list{
+  background: var(--chat-list-bg);
+}
+.card, .card-body, .navbar{
+  border-radius: 1rem !important;
+}
+.custom-input-theme{
+  background: var(--input-bg);
+  border: 2px solid var(--input-bg);
+  border-radius: 8px;
+  color: var(--text-color) !important;
+  padding: 20px 15px;
+}
+.custom-input-theme:focus{
+  box-shadow: inset 0 0px 0 $blue !important;
+  border: 2px solid $blue;
+  background: var(--input-bg);
+  color: var(--input-color);
 
+}
 html,
 body {
-  // background-color: $white-smoke;
-  background: #4facfe;
+  // background: #4facfe;
   font-family: "DM Sans", sans-serif;
-  color: $black;
+  // color: $black;
   height: 100%;
+  color: var(--text-color);
+  background: var(--border-color);
 }
 
 .tblue {
@@ -37,7 +120,7 @@ body {
   margin: 15px;
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.05);
   border-radius: 0.5rem;
-  background-color: $white;
+  // background-color: $white;
 }
 
 .card {

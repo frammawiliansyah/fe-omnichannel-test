@@ -40,6 +40,15 @@ class AppConnect extends Component {
   }
 
   render() {
+    const body = document.body;
+    const lightTheme = "light";
+    const darkTheme = "dark";
+    let theme = this.props.theme;
+    if (theme === lightTheme || theme === darkTheme) {
+      body.classList.add(theme);
+    } else {
+      body.classList.add(lightTheme);
+    }
     return (
       <div>
         <Router>
@@ -88,7 +97,8 @@ class AppConnect extends Component {
 
 function mapStateToProps(state) {
   return {
-    role: state.user.role
+    role: state.user.role,
+    theme: state.user.theme
   };
 }
 
