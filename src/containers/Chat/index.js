@@ -7,7 +7,8 @@ import {
   Button,
   Spinner,
   Row,
-  Col
+  Col,
+  Badge
 } from "reactstrap";
 import { FiSend } from "react-icons/fi";
 
@@ -27,7 +28,8 @@ class ChatMenu extends Component {
     scrollPosition: 999999999,
     message: "",
     loan_id: null,
-    isScrollTop: false
+    isScrollTop: false,
+    isHiddenBtnScroll: true
   };
   componentDidUpdate() {
     let loan_id = this.props.chat_detail.loan_id;
@@ -74,6 +76,37 @@ class ChatMenu extends Component {
   handleChange = value => {
     this.props.setMessage(value);
   };
+  onScrollChange() {
+    let scrollPosition = document.getElementById("chat").scrollTop;
+    let scrollHeight = document.getElementById("chat").scrollHeight;
+    if (scrollHeight - scrollPosition > 1000 && this.state.isHiddenBtnScroll) {
+      this.setState({ isHiddenBtnScroll: false });
+    }
+    if (scrollHeight - scrollPosition < 1000 && !this.state.isHiddenBtnScroll) {
+      this.setState({ isHiddenBtnScroll: true });
+    }
+    if (scrollPosition === 0 && this.props.message_list.length < 15) {
+      this.setState({ isScrollTop: true });
+      setTimeout(async () => {
+        await this.handleChange({
+          message_list: [
+            {
+              loan_id: 1,
+              username: "Adele",
+              date: "2020-06-20 08:03",
+              message: "Lorem ipsum dolor sit amet"
+            },
+            ...this.props.message_list
+          ]
+        });
+        this.setScroll(
+          document.getElementById("chat").scrollHeight - scrollHeight
+        );
+      }, 500);
+    } else {
+      this.setState({ isScrollTop: false });
+    }
+  }
   render() {
     return (
       <div>
@@ -100,40 +133,7 @@ class ChatMenu extends Component {
                 </div>
                 <hr />
                 <div style={{ height: "75vh" }}>
-                  <ul
-                    id="chat"
-                    onScroll={() => {
-                      let scrollPosition = document.getElementById("chat")
-                        .scrollTop;
-                      let scrollHeight = document.getElementById("chat")
-                        .scrollHeight;
-                      if (
-                        scrollPosition === 0 &&
-                        this.props.message_list.length < 15
-                      ) {
-                        this.setState({ isScrollTop: true });
-                        setTimeout(async () => {
-                          await this.handleChange({
-                            message_list: [
-                              {
-                                loan_id: 1,
-                                username: "Adele",
-                                date: "2020-06-20 08:03",
-                                message: "Lorem ipsum dolor sit amet"
-                              },
-                              ...this.props.message_list
-                            ]
-                          });
-                          this.setScroll(
-                            document.getElementById("chat").scrollHeight -
-                              scrollHeight
-                          );
-                        }, 500);
-                      } else {
-                        this.setState({ isScrollTop: false });
-                      }
-                    }}
-                  >
+                  <ul id="chat" onScroll={() => this.onScrollChange()}>
                     <div
                       className="text-center p-2"
                       style={{
@@ -153,9 +153,9 @@ class ChatMenu extends Component {
                         (!this.props.load_message && !this.state.isScrollTop)
                       }
                     >
-                      <Button color="secondary">
+                      <Badge color="secondary">
                         Memuat data... <Spinner size="sm" color="white" />
-                      </Button>
+                      </Badge>
                     </div>
                     {this.props.message_list.map((item, index) => {
                       return (
@@ -214,6 +214,22 @@ class ChatMenu extends Component {
                         </li>
                       );
                     })}
+                    <div
+                      className="text-center"
+                      style={{
+                        position: "sticky",
+                        bottom: "0px"
+                      }}
+                      hidden={this.state.isHiddenBtnScroll}
+                    >
+                      <Badge
+                        onClick={() => this.setScroll(999999999)}
+                        color="info"
+                        className="cp"
+                      >
+                        Scroll Down
+                      </Badge>
+                    </div>
                   </ul>
                 </div>
               </CardBody>
