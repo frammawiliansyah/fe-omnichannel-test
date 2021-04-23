@@ -42,31 +42,31 @@ class ChatList extends Component {
       {
         loan_id: 1,
         username: "Adele",
-        date: "2020-06-20 08:08",
+        date: "2020-07-20 08:08",
         message: "Lorem"
       },
       {
         loan_id: 2,
         username: "Boby",
-        date: "2020-06-20 08:09",
+        date: "2020-07-20 08:09",
         message: "consectetur adipiscing elit"
       },
       {
         loan_id: 2,
         username: "Boby",
-        date: "2020-06-20 09:06",
+        date: "2020-08-20 09:06",
         message: "consectetur adipiscing"
       },
       {
         loan_id: 1,
         username: "Adele",
-        date: "2020-06-20 10:08",
+        date: "2020-09-20 10:08",
         message: "Lorem"
       },
       {
         loan_id: 1,
         username: "Adele",
-        date: "2020-06-20 10:09",
+        date: "2020-09-20 10:09",
         message: "Lorem"
       }
     ];

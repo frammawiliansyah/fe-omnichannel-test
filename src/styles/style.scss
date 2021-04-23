@@ -71,19 +71,26 @@ hr{
 .card, .card-body, .navbar{
   border-radius: 1rem !important;
 }
-.custom-input-theme{
+.form-control{
   background: var(--input-bg);
   border: 2px solid var(--input-bg);
   border-radius: 8px;
   color: var(--text-color) !important;
   padding: 20px 15px;
 }
-.custom-input-theme:focus{
+.form-control:focus{
   box-shadow: inset 0 0px 0 $blue !important;
   border: 2px solid $blue;
   background: var(--input-bg);
   color: var(--input-color);
 
+}
+select{
+  padding: 0 15px !important;
+  height: 44px !important;
+}
+textarea{
+  padding: 10px 15px !important;
 }
 html,
 body {
@@ -219,4 +226,23 @@ label {
 }
 .cp{
   cursor: pointer;
+}
+
+.message-box:hover{
+	.message{
+		background: var(--dark-border) !important;
+	}
+	.message-delete{
+		display: block;
+	}
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
 }
