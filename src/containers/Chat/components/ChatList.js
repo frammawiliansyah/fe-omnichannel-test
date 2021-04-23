@@ -25,49 +25,57 @@ class ChatList extends Component {
         loan_id: 1,
         username: "Adele",
         date: "2020-06-20 08:03",
-        message: "Lorem ipsum dolor sit amet"
+        message: "Lorem ipsum dolor sit amet",
+        is_deletable: false
       },
       {
         loan_id: 2,
         username: "Boby",
         date: "2020-06-20 08:04",
-        message: "consectetur adipiscing elit"
+        message: "consectetur adipiscing elit",
+        is_deletable: false
       },
       {
         loan_id: 2,
         username: "Boby",
         date: "2020-06-20 08:06",
-        message: "consectetur adipiscing"
+        message: "consectetur adipiscing",
+        is_deletable: false
       },
       {
         loan_id: 1,
         username: "Adele",
         date: "2020-07-20 08:08",
-        message: "Lorem"
+        message: "Lorem",
+        is_deletable: false
       },
       {
         loan_id: 2,
         username: "Boby",
         date: "2020-07-20 08:09",
-        message: "consectetur adipiscing elit"
+        message: "consectetur adipiscing elit",
+        is_deletable: false
       },
       {
         loan_id: 2,
         username: "Boby",
         date: "2020-08-20 09:06",
-        message: "consectetur adipiscing"
+        message: "consectetur adipiscing",
+        is_deletable: false
       },
       {
         loan_id: 1,
         username: "Adele",
         date: "2020-09-20 10:08",
-        message: "Lorem"
+        message: "Lorem",
+        is_deletable: false
       },
       {
         loan_id: 1,
         username: "Adele",
         date: "2020-09-20 10:09",
-        message: "Lorem"
+        message: "Lorem",
+        is_deletable: false
       }
     ];
     this.props.setMessage({ load_message: true, message_list: [] });

@@ -95,7 +95,8 @@ class ChatMenu extends Component {
               loan_id: 1,
               username: "Adele",
               date: "2020-06-20 08:03",
-              message: "Lorem ipsum dolor sit amet"
+              message: "Lorem ipsum dolor sit amet",
+              is_deletable: false
             },
             ...this.props.message_list
           ]
@@ -110,7 +111,7 @@ class ChatMenu extends Component {
   }
   onDeleteMessage = index => {
     let new_message_list = this.props.message_list;
-    new_message_list.splice(index, 1);
+    new_message_list[index].is_deletable = true;
     this.handleChange({
       message_list: [...new_message_list]
     });
@@ -168,7 +169,7 @@ class ChatMenu extends Component {
                     {this.props.message_list.map((item, index) => {
                       if (item.loan_id !== 2) {
                         return (
-                          <li className="you">
+                          <li className="you" hidden={item.is_deletable}>
                             <div
                               className="text-center my-2"
                               hidden={
@@ -220,7 +221,7 @@ class ChatMenu extends Component {
                         );
                       } else {
                         return (
-                          <li className="me">
+                          <li className="me" hidden={item.is_deletable}>
                             <div
                               className="text-center my-2"
                               hidden={
