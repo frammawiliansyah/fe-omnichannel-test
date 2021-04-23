@@ -11,9 +11,10 @@ import {
   Badge
 } from "reactstrap";
 import { FiSend } from "react-icons/fi";
+import { MdDelete } from "react-icons/md";
 
 // images
-import { Avatar, Space } from "antd";
+import { Avatar } from "antd";
 import "./style.scss";
 import { connect } from "react-redux";
 import moment from "moment";
@@ -94,7 +95,8 @@ class ChatMenu extends Component {
               loan_id: 1,
               username: "Adele",
               date: "2020-06-20 08:03",
-              message: "Lorem ipsum dolor sit amet"
+              message: "Lorem ipsum dolor sit amet",
+              is_deletable: false
             },
             ...this.props.message_list
           ]
@@ -107,6 +109,13 @@ class ChatMenu extends Component {
       this.setState({ isScrollTop: false });
     }
   }
+  onDeleteMessage = index => {
+    let new_message_list = this.props.message_list;
+    new_message_list[index].is_deletable = true;
+    this.handleChange({
+      message_list: [...new_message_list]
+    });
+  };
   render() {
     return (
       <div>
@@ -158,61 +167,111 @@ class ChatMenu extends Component {
                       </Badge>
                     </div>
                     {this.props.message_list.map((item, index) => {
-                      return (
-                        <li className={item.loan_id !== 2 ? "you" : "me"}>
-                          <Space>
+                      if (item.loan_id !== 2) {
+                        return (
+                          <li className="you" hidden={item.is_deletable}>
                             <div
-                              hidden={item.loan_id === 2}
-                              style={{
-                                visibility:
-                                  index > 0 &&
-                                  this.props.message_list[index - 1].loan_id ===
-                                    item.loan_id
-                                    ? "hidden"
-                                    : "visible"
-                              }}
+                              className="text-center my-2"
+                              hidden={
+                                index > 0 &&
+                                moment(
+                                  this.props.message_list[index - 1].date
+                                ).format("DD/MM/YYYY") ===
+                                  moment(item.date).format("DD/MM/YYYY")
+                              }
                             >
-                              <Avatar size={50}>
-                                <b>{item.username.split("")[0]}</b>
-                              </Avatar>
+                              <Badge>
+                                {moment(item.date).format("DD/MM/YYYY")}
+                              </Badge>
                             </div>
-                            <div>
-                              <div className="entete">
-                                <span
-                                  className={
-                                    item.loan_id !== 2
-                                      ? "status green mr-2"
-                                      : "status blue mr-2"
-                                  }
-                                ></span>
-                                <h3>
-                                  {moment(item.date).format(
-                                    "DD-MM-YYYY, h:mm:ss a"
-                                  )}
-                                </h3>
+                            <div className="d-flex justify-content-start">
+                              <div
+                                hidden={item.loan_id === 2}
+                                style={{
+                                  visibility:
+                                    index > 0 &&
+                                    this.props.message_list[index - 1]
+                                      .loan_id === item.loan_id
+                                      ? "hidden"
+                                      : "visible"
+                                }}
+                                className="mr-2"
+                              >
+                                <Avatar size={50}>
+                                  <b>{item.username.split("")[0]}</b>
+                                </Avatar>
                               </div>
-                              <div>
+                              <div className="message-box">
                                 <div className="message">{item.message}</div>
+                                <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
+                                  <div>{moment(item.date).format("hh:mm")}</div>
+                                  <div className="ml-2 message-delete">
+                                    <MdDelete
+                                      size="18"
+                                      className="cp"
+                                      onClick={() =>
+                                        this.onDeleteMessage(index)
+                                      }
+                                    />
+                                  </div>
+                                </div>
                               </div>
                             </div>
+                          </li>
+                        );
+                      } else {
+                        return (
+                          <li className="me" hidden={item.is_deletable}>
                             <div
-                              hidden={item.loan_id !== 2}
-                              style={{
-                                visibility:
-                                  index > 0 &&
-                                  this.props.message_list[index - 1].loan_id ===
-                                    item.loan_id
-                                    ? "hidden"
-                                    : "visible"
-                              }}
+                              className="text-center my-2"
+                              hidden={
+                                index > 0 &&
+                                moment(
+                                  this.props.message_list[index - 1].date
+                                ).format("DD/MM/YYYY") ===
+                                  moment(item.date).format("DD/MM/YYYY")
+                              }
                             >
-                              <Avatar size={50}>
-                                <b>{this.props.username.split("")[0]}</b>
-                              </Avatar>
+                              <Badge>
+                                {moment(item.date).format("DD/MM/YYYY")}
+                              </Badge>
                             </div>
-                          </Space>
-                        </li>
-                      );
+                            <div className="d-flex justify-content-end">
+                              <div className="message-box">
+                                <div className="message">{item.message}</div>
+                                <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
+                                  <div>{moment(item.date).format("hh:mm")}</div>
+                                  <div className="ml-2 message-delete">
+                                    <MdDelete
+                                      size="18"
+                                      className="cp"
+                                      onClick={() =>
+                                        this.onDeleteMessage(index)
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                              <div
+                                hidden={item.loan_id !== 2}
+                                style={{
+                                  visibility:
+                                    index > 0 &&
+                                    this.props.message_list[index - 1]
+                                      .loan_id === item.loan_id
+                                      ? "hidden"
+                                      : "visible"
+                                }}
+                                className="ml-2"
+                              >
+                                <Avatar size={50}>
+                                  <b>{this.props.username.split("")[0]}</b>
+                                </Avatar>
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      }
                     })}
                     <div
                       className="text-center"
