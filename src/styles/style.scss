@@ -83,7 +83,9 @@ hr{
   border: 2px solid $blue;
   background: var(--input-bg);
   color: var(--input-color);
-
+}
+.form-control:disabled{
+  background: #e9ecef81;
 }
 select{
   padding: 0 15px !important;
@@ -227,10 +229,18 @@ label {
 .cp{
   cursor: pointer;
 }
-
+#chat .you .message{
+	background-color:var(--border-color);	
+  color: var(--text-color);
+}
+#chat .me .message{
+	background-color: var(--border-color);
+  color: var(--text-color);
+}
 .message-box:hover{
 	.message{
 		background: var(--dark-border) !important;
+    color: var(--light) !important;
 	}
 	.message-delete{
 		display: block;
