@@ -14,7 +14,7 @@ import { FiSend } from "react-icons/fi";
 import { MdDelete } from "react-icons/md";
 
 // images
-import { Avatar } from "antd";
+import { Avatar, Image } from "antd";
 import "./style.scss";
 import { connect } from "react-redux";
 import moment from "moment";
@@ -23,14 +23,16 @@ import ChatDetail from "./components/ChatDetail";
 import Navbar from "../../components/layouts/Navbar";
 import Bg1 from "../../assets/images/web-chat.svg";
 import Bg2 from "../../assets/images/web-chat-dark.svg";
+import { AiOutlinePaperClip } from "react-icons/ai";
 
 class ChatMenu extends Component {
   state = {
-    scrollPosition: 999999999,
     message: "",
+    image: null,
     loan_id: null,
     isScrollTop: false,
-    isHiddenBtnScroll: true
+    isHiddenBtnScroll: true,
+    scrollPosition: 999999999
   };
   componentDidUpdate() {
     let loan_id = this.props.chat_detail.loan_id;
@@ -96,6 +98,7 @@ class ChatMenu extends Component {
               username: "Adele",
               date: "2020-06-20 08:03",
               message: "Lorem ipsum dolor sit amet",
+              is_image: false,
               is_deletable: false
             },
             ...this.props.message_list
@@ -109,6 +112,17 @@ class ChatMenu extends Component {
       this.setState({ isScrollTop: false });
     }
   }
+  handleMessage = message => {
+    let arr = message.split(/(https?:\/\/[^\s]+)/g);
+    for (let i = 1; i < arr.length; i += 2) {
+      arr[i] = (
+        <a key={"link" + i} href={arr[i]}>
+          {arr[i]}
+        </a>
+      );
+    }
+    return arr;
+  };
   onDeleteMessage = index => {
     let new_message_list = this.props.message_list;
     new_message_list[index].is_deletable = true;
@@ -116,6 +130,24 @@ class ChatMenu extends Component {
       message_list: [...new_message_list]
     });
   };
+  async onSubmitMessage() {
+    await this.handleChange({
+      message_list: [
+        ...this.props.message_list,
+        {
+          loan_id: 2,
+          username: this.props.username,
+          date: moment().format("YYYY-MM-DD hh:mm:ss"),
+          message: this.state.image
+            ? URL.createObjectURL(this.state.image)
+            : this.state.message,
+          is_image: this.state.image ? true : false
+        }
+      ]
+    });
+    await this.setState({ message: "", image: null });
+    this.setScroll(999999999);
+  }
   render() {
     return (
       <div>
@@ -202,7 +234,17 @@ class ChatMenu extends Component {
                                 </Avatar>
                               </div>
                               <div className="message-box">
-                                <div className="message">{item.message}</div>
+                                <div className="message">
+                                  {item.is_image ? (
+                                    <Image
+                                      src={item.message}
+                                      alt="document"
+                                      width="150px"
+                                    />
+                                  ) : (
+                                    this.handleMessage(item.message)
+                                  )}
+                                </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
                                   <div>{moment(item.date).format("hh:mm")}</div>
                                   <div className="ml-2 message-delete">
@@ -238,7 +280,17 @@ class ChatMenu extends Component {
                             </div>
                             <div className="d-flex justify-content-end">
                               <div className="message-box">
-                                <div className="message">{item.message}</div>
+                                <div className="message">
+                                  {item.is_image ? (
+                                    <Image
+                                      src={item.message}
+                                      alt="document"
+                                      width="150px"
+                                    />
+                                  ) : (
+                                    this.handleMessage(item.message)
+                                  )}
+                                </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
                                   <div>{moment(item.date).format("hh:mm")}</div>
                                   <div className="ml-2 message-delete">
@@ -301,39 +353,75 @@ class ChatMenu extends Component {
                 }}
               >
                 <div className="d-flex align-items-stretch">
+                  <div className="d-flex justify-content-center align-items-center">
+                    <Button
+                      style={{
+                        borderRadius: "50%",
+                        width: "40px",
+                        height: "40px",
+                        overflow: "hidden"
+                      }}
+                      className="p-0 m-0 d-flex justify-content-center mr-2"
+                    >
+                      <label className="cp w-100 h-100 d-flex justify-content-center align-items-center">
+                        <div>
+                          <AiOutlinePaperClip size="20" />
+                        </div>
+                        <Input
+                          type="file"
+                          className="d-none"
+                          accept="image/*"
+                          onChange={async e => {
+                            if (e.target.value) {
+                              this.setState({
+                                message: "",
+                                image: e.target.files[0]
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+                    </Button>
+                  </div>
                   <Input
+                    disabled={this.state.image !== null}
                     placeholder="Type a message here..."
                     type="textarea"
-                    className="m-0 mr-3 custom-input-theme"
+                    className="m-0 custom-input-theme"
                     autoFocus
-                    value={this.state.message}
+                    value={
+                      this.state.image
+                        ? this.state.image.name
+                        : this.state.message
+                    }
                     style={this.setInputHeight()}
                     onChange={e => this.setState({ message: e.target.value })}
                   />
                   <Button
+                    hidden={this.state.image === null}
+                    className="ml-2"
+                    style={{
+                      borderRadius: "50%",
+                      width: "40px",
+                      height: "40px"
+                    }}
+                    color="danger"
+                    onClick={() => this.setState({ image: null })}
+                  >
+                    <MdDelete />
+                  </Button>
+                  <Button
+                    hidden={
+                      this.state.image === null && this.state.message === ""
+                    }
+                    className="ml-2"
                     style={{
                       borderRadius: "50%",
                       width: "40px",
                       height: "40px"
                     }}
                     color="primary"
-                    onClick={async () => {
-                      if (this.state.message !== "") {
-                        await this.handleChange({
-                          message_list: [
-                            ...this.props.message_list,
-                            {
-                              loan_id: 2,
-                              username: this.props.username,
-                              date: moment().format("YYYY-MM-DD hh:mm:ss"),
-                              message: this.state.message
-                            }
-                          ]
-                        });
-                        await this.setState({ message: "" });
-                        this.setScroll(999999999);
-                      }
-                    }}
+                    onClick={() => this.onSubmitMessage()}
                   >
                     <FiSend />
                   </Button>
