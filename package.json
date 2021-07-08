@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/charts": "^1.1.15",
-    "antd": "^4.14.0",
+    "antd": "^4.16.3",
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "env-cmd": "^10.1.0",
