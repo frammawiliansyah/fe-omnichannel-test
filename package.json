@@ -25,7 +25,7 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "sweetalert2": "^10.16.9",
-    "xlsx": "^0.16.9"
+    "xlsx": "^0.17.0"
   },
   "scripts": {
     "start": "env-cmd -f .env.local react-scripts start",
