@@ -76,7 +76,7 @@ class Header extends React.Component {
                 <Avatar size={40}>
                   <b>
                     {this.props.user.account
-                      ? this.props.user.account.split("")[0]
+                      ? this.props.user.account.username
                       : null}
                   </b>
                 </Avatar>

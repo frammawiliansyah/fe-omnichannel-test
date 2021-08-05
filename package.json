@@ -7,6 +7,7 @@
     "antd": "^4.16.3",
     "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
+    "crypto-js": "^4.1.1",
     "env-cmd": "^10.1.0",
     "moment": "^2.27.0",
     "node-sass": "^4.14.1",
@@ -20,6 +21,7 @@
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.3",
+    "react-use-websocket": "^2.7.1",
     "reactstrap": "^8.9.0",
     "redux": "^4.1.0",
     "redux-logger": "^3.0.6",
@@ -60,8 +62,6 @@
     "eslint-config-react-app": "^5.2.1",
     "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-prettier": "^3.4.0",
-    "eslint-plugin-react": "^7.24.0",
-    "prettier": "^1.19.1"
+    "eslint-plugin-react": "^7.24.0"
   }
 }

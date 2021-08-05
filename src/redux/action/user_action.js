@@ -1,4 +1,5 @@
 import axios from "axios";
+const CryptoJS = require("crypto-js");
 
 export const login = (username, password, cbOk, cbNok) => async dispatch => {
   dispatch(setStateUser({ isLoading: true }));
@@ -8,7 +9,10 @@ export const login = (username, password, cbOk, cbNok) => async dispatch => {
     const request = process.env.REACT_APP_API_END_POINT + "/login";
     const response = await axios.post(
       request,
-      {},
+      {
+        username,
+        password: CryptoJS.AES.encrypt(password, "FIT999").toString()
+      },
       {
         headers: { Authorization: auth },
         validateStatus: function() {
@@ -21,10 +25,7 @@ export const login = (username, password, cbOk, cbNok) => async dispatch => {
       dispatch(
         setStateUser({
           isLoading: false,
-          token: response.data.token,
-          account: username,
-          admin_user_id: response.data.admin_user_id,
-          role: response.data.role
+          account: response.data
         })
       );
       cbOk();

@@ -25,17 +25,20 @@ class AppConnect extends Component {
   }
 
   checkAuthorization(spesificGrantedRoles) {
-    let result = false;
+    let result = true;
 
-    if (spesificGrantedRoles) {
-      spesificGrantedRoles.map(role => {
-        if (role === this.props.role) {
-          result = true;
-        }
-      });
-    } else {
-      result = true;
-    }
+    console.log("checkAuthorization", this.props);
+
+    // if (spesificGrantedRoles) {
+    //   spesificGrantedRoles.map(role => {
+    //     if (role === this.props.role) {
+    //       result = true;
+    //     }
+    //   });
+    // } else {
+    //   result = true;
+    // }
+
     return result;
   }
 

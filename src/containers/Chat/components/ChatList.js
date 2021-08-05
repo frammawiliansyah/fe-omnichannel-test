@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import axios from "axios";
 
 // icons
 import { FiSearch } from "react-icons/fi";
@@ -13,90 +14,52 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 class ChatList extends Component {
   state = {
-    loan_id: null
+    loan_id: null,
+    chat_list: this.props.chat_list
   };
-  getData = async loan_id => {
-    let message_list = [];
-    let chat_detail = this.props.chat_list.filter(
-      item => item.loan_id === loan_id
-    )[0];
-    message_list = [
+  componentDidMount() {
+    this.numberListAPI();
+  }
+  numberListAPI = async payload => {
+    const response = await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/conversation/get/numberList",
+      {},
       {
-        loan_id: 1,
-        username: "Adele",
-        date: "2020-06-20 08:03",
-        message: "Lorem ipsum dolor sit amet",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "2020-06-20 08:04",
-        message: "consectetur adipiscing elit",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "2020-06-20 08:06",
-        message: "consectetur adipiscing",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "2020-07-20 08:08",
-        message: "Lorem",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "2020-07-20 08:09",
-        message: "consectetur adipiscing elit",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 2,
-        username: "Boby",
-        date: "2020-08-20 09:06",
-        message: "consectetur adipiscing",
-        is_image: false,
-        is_deletable: false
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "2020-09-20 10:08",
-        message: "https://bit.ly/3aLj2W0",
-        is_image: true,
-        is_deletable: false
-      },
-      {
-        loan_id: 1,
-        username: "Adele",
-        date: "2020-09-20 10:09",
-        message: "Lorem",
-        is_image: false,
-        is_deletable: false
+        validateStatus: function() {
+          return true;
+        }
       }
-    ];
-    this.props.setMessage({ load_message: true, message_list: [] });
-    setTimeout(async () => {
-      await this.props.setMessage({ chat_detail, message_list });
-      this.props.setMessage({ load_message: false });
-    }, 500);
+    );
+    if (response.data.numberList.length > 0) {
+      this.setState({
+        chat_list: response.data.numberList
+      });
+    }
+  };
+  getData = async number => {
+    let message_list = [];
+    let chat_detail = this.state.chat_list.filter(
+      item => item.number === number
+    )[0];
+    const response = await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
+      { number },
+      {
+        validateStatus: function() {
+          return true;
+        }
+      }
+    );
+    message_list = response.data.chatData;
+    await this.props.setMessage({ load_message: true, message_list: [] });
+    await this.props.setMessage({ chat_detail, message_list });
+    await this.props.setMessage({ load_message: false });
   };
   getChatList() {
     setTimeout(() => {
       this.props.setMessage({
         chat_list: [
-          ...this.props.chat_list,
+          ...this.state.chat_list,
           {
             loan_id: 100001,
             username: "Boby",
@@ -111,7 +74,7 @@ class ChatList extends Component {
     let { loan_id } = this.state;
     if (loan_id) {
       this.setState({ loan_id });
-      let new_chat_list = this.props.chat_list.filter(
+      let new_chat_list = this.state.chat_list.filter(
         item => item.loan_id === parseInt(loan_id)
       );
       this.props.setMessage({ chat_list: [...new_chat_list] });
@@ -141,11 +104,11 @@ class ChatList extends Component {
           <br />
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll
-              dataLength={this.props.chat_list}
+              dataLength={this.state.chat_list}
               next={() => this.getChatList()}
               hasMore={
-                this.props.chat_list.length > 0 &&
-                this.props.chat_list.length <= 20
+                this.state.chat_list.length > 0 &&
+                this.state.chat_list.length <= 20
               }
               loader={
                 <div className="text-center p-2">
@@ -155,11 +118,11 @@ class ChatList extends Component {
               scrollableTarget="chat-history"
               style={{ overflow: "hidden" }}
             >
-              {this.props.chat_list.map((item, index) => (
+              {this.state.chat_list.map((item, index) => (
                 <div className="chat-list p-2">
                   <div
                     style={{ cursor: "pointer" }}
-                    onClick={() => this.getData(item.loan_id)}
+                    onClick={() => this.getData(item.number)}
                   >
                     <List.Item>
                       <List.Item.Meta
@@ -172,14 +135,14 @@ class ChatList extends Component {
                             </b>
                           </Avatar>
                         }
-                        title={item.username}
-                        description={
-                          item.message.split("").length > 10
-                            ? item.message.substring(0, 10) + "..."
-                            : item.message
-                        }
+                        title={`+62 ${
+                            item
+                              .number
+                              .toString()
+                              .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
+                          }`}
+                        description={""}
                       />
-                      <div>#{item.loan_id}</div>
                     </List.Item>
                   </div>
                 </div>

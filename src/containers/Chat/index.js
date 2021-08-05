@@ -24,16 +24,32 @@ import Navbar from "../../components/layouts/Navbar";
 import Bg1 from "../../assets/images/web-chat.svg";
 import Bg2 from "../../assets/images/web-chat-dark.svg";
 import { AiOutlinePaperClip } from "react-icons/ai";
+import axios from "axios";
 
 class ChatMenu extends Component {
   state = {
-    message: "",
+    urlSocket: "ws://localhost:3009/echo",
+    webSocket: null,
+    number: this.props.chat_detail.number,
+    messageContent: "",
     image: null,
     loan_id: null,
     isScrollTop: false,
     isHiddenBtnScroll: true,
     scrollPosition: 999999999
   };
+  componentDidMount() {
+    /**
+     * Will changed to Socket.
+     */
+    setInterval(() => {
+      if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.replyCheck(this.props.chat_detail.number);
+    }, 30000);
+
+    setInterval(() => {
+      if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.requestCheck(this.props.chat_detail.number);
+    }, 300000);
+  }
   componentDidUpdate() {
     let loan_id = this.props.chat_detail.loan_id;
     if (this.state.loan_id !== loan_id) {
@@ -42,12 +58,39 @@ class ChatMenu extends Component {
       this.setState({ loan_id });
     }
   }
+  requestCheck = async (number) => {
+    await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/conversation/report",
+      {
+        whatsapp_number: number
+      },
+      {
+        validateStatus: function() {
+          return true;
+        }
+      }
+    );
+  }
+  replyCheck = async (number) => {
+    const response = await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
+      { number },
+      {
+        validateStatus: function() {
+          return true;
+        }
+      }
+    );
+
+    await this.props.setMessage({ message_list: response.data.chatData });
+    this.setScroll(this.state.scrollPosition);
+  }
   setScroll(numb) {
     document.getElementById("chat").scrollTop = numb;
   }
   setInputHeight() {
-    let { message } = this.state;
-    let inputRows = message.split("\n").length * 24;
+    let { messageContent } = this.state;
+    let inputRows = messageContent.split("\n").length * 24;
     let inputHeight = inputRows + 20 + "px";
     if (inputRows > 216) {
       return {
@@ -113,15 +156,17 @@ class ChatMenu extends Component {
     }
   }
   handleMessage = message => {
-    let arr = message.split(/(https?:\/\/[^\s]+)/g);
-    for (let i = 1; i < arr.length; i += 2) {
-      arr[i] = (
-        <a key={"link" + i} href={arr[i]}>
-          {arr[i]}
-        </a>
-      );
+    if (message !== undefined && message !== null) {
+      let arr = message.split(/(https?:\/\/[^\s]+)/g);
+      for (let i = 1; i < arr.length; i += 2) {
+        arr[i] = (
+          <a key={"link" + i} href={arr[i]}>
+            {arr[i]}
+          </a>
+        );
+      }
+      return arr;
     }
-    return arr;
   };
   onDeleteMessage = index => {
     let new_message_list = this.props.message_list;
@@ -131,17 +176,30 @@ class ChatMenu extends Component {
     });
   };
   async onSubmitMessage() {
+    await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/message/send",
+      {
+        whatsapp_number: this.state.number,
+        message: this.state.messageContent,
+      },
+      {
+        validateStatus: function() {
+          return true;
+        }
+      }
+    );
+
     await this.handleChange({
       message_list: [
         ...this.props.message_list,
         {
-          loan_id: 2,
-          username: this.props.username,
-          date: moment().format("YYYY-MM-DD hh:mm:ss"),
-          message: this.state.image
-            ? URL.createObjectURL(this.state.image)
-            : this.state.message,
-          is_image: this.state.image ? true : false
+          id: null,
+          messageContent: this.state.messageContent,
+          messageDate: new Date(),
+          messageStatus: "SENT",
+          messageType: "MESSAGE-OUT",
+          number: this.state.number,
+          createdAt: new Date(),
         }
       ]
     });
@@ -149,6 +207,13 @@ class ChatMenu extends Component {
     this.setScroll(999999999);
   }
   render() {
+    if (this.state.webSocket !== null) {
+      this.state.webSocket.onmessage = e => {
+        console.log('e', e);
+        const message = JSON.parse(e.data);
+        console.log('e', message);
+      };
+    }
     return (
       <div>
         <div hidden={this.props.chat_detail.loan_id !== null}>
@@ -199,7 +264,7 @@ class ChatMenu extends Component {
                       </Badge>
                     </div>
                     {this.props.message_list.map((item, index) => {
-                      if (item.loan_id !== 2) {
+                      if (item.messageType === 'MESSAGE-IN') {
                         return (
                           <li className="you" hidden={item.is_deletable}>
                             <div
@@ -209,11 +274,11 @@ class ChatMenu extends Component {
                                 moment(
                                   this.props.message_list[index - 1].date
                                 ).format("DD/MM/YYYY") ===
-                                  moment(item.date).format("DD/MM/YYYY")
+                                  moment(item.messageDate).format("DD/MM/YYYY")
                               }
                             >
                               <Badge>
-                                {moment(item.date).format("DD/MM/YYYY")}
+                                {moment(item.messageDate).format("DD/MM/YYYY")}
                               </Badge>
                             </div>
                             <div className="d-flex justify-content-start">
@@ -230,7 +295,7 @@ class ChatMenu extends Component {
                                 className="mr-2"
                               >
                                 <Avatar size={50}>
-                                  <b>{item.username.split("")[0]}</b>
+                                  <b>{item.number}</b>
                                 </Avatar>
                               </div>
                               <div className="message-box">
@@ -242,11 +307,11 @@ class ChatMenu extends Component {
                                       width="150px"
                                     />
                                   ) : (
-                                    this.handleMessage(item.message)
+                                    this.handleMessage(item.messageContent)
                                   )}
                                 </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
-                                  <div>{moment(item.date).format("hh:mm")}</div>
+                                  <div>{moment(item.messageDate).format("hh:mm")}</div>
                                   <div className="ml-2 message-delete">
                                     <MdDelete
                                       size="18"
@@ -271,11 +336,11 @@ class ChatMenu extends Component {
                                 moment(
                                   this.props.message_list[index - 1].date
                                 ).format("DD/MM/YYYY") ===
-                                  moment(item.date).format("DD/MM/YYYY")
+                                  moment(item.messageDate).format("DD/MM/YYYY")
                               }
                             >
                               <Badge>
-                                {moment(item.date).format("DD/MM/YYYY")}
+                                {moment(item.messageDate).format("DD/MM/YYYY")}
                               </Badge>
                             </div>
                             <div className="d-flex justify-content-end">
@@ -288,11 +353,11 @@ class ChatMenu extends Component {
                                       width="150px"
                                     />
                                   ) : (
-                                    this.handleMessage(item.message)
+                                    this.handleMessage(item.messageContent)
                                   )}
                                 </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
-                                  <div>{moment(item.date).format("hh:mm")}</div>
+                                  <div>{moment(item.messageDate).format("hh:mm")}</div>
                                   <div className="ml-2 message-delete">
                                     <MdDelete
                                       size="18"
@@ -317,7 +382,7 @@ class ChatMenu extends Component {
                                 className="ml-2"
                               >
                                 <Avatar size={50}>
-                                  <b>{this.props.username.split("")[0]}</b>
+                                  <b>{this.props.number}</b>
                                 </Avatar>
                               </div>
                             </div>
@@ -392,10 +457,10 @@ class ChatMenu extends Component {
                     value={
                       this.state.image
                         ? this.state.image.name
-                        : this.state.message
+                        : this.state.messageContent
                     }
                     style={this.setInputHeight()}
-                    onChange={e => this.setState({ message: e.target.value })}
+                    onChange={e => this.setState({ messageContent: e.target.value })}
                   />
                   <Button
                     hidden={this.state.image === null}
@@ -412,7 +477,7 @@ class ChatMenu extends Component {
                   </Button>
                   <Button
                     hidden={
-                      this.state.image === null && this.state.message === ""
+                      this.state.image === null && this.state.messageContent === ""
                     }
                     className="ml-2"
                     style={{

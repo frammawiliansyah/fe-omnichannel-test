@@ -2,11 +2,8 @@
   "extends": [
     "react-app"
   ],
-  "plugins": [
-    "prettier"
-  ],
+  "plugins": [],
   "rules": {
-    "prettier/prettier": "error",
     "radix": [0],
     "import/no-extraneous-dependencies": [
       0
