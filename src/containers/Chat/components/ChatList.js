@@ -49,7 +49,6 @@ class ChatList extends Component {
       number: selected.pj_loan_detail.mobileNumber,
       loan_id: selected.id,
       username: selected.pj_loan_detail.fullName.toUpperCase(),
-      message: "message",
       va_number: selected.pj_loan_disburse.virtualAccountNumber,
       loan_status: selected.loanStatus.toUpperCase(),
       loan_amount: selected.loanAmount
@@ -60,30 +59,72 @@ class ChatList extends Component {
       loan_id: loanId
     });
 
-    // let message_list = [];
-    // let chat_detail = this.state.chat_list.filter(
-    //   item => item.number === number
-    // )[0];
-    // const response = await axios.post(
-    //   process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
-    //   { number },
-    //   {
-    //     validateStatus: function() {
-    //       return true;
-    //     }
-    //   }
-    // );
-    // message_list = response.data.chatData;
+    const getContactDetail = await this.getContactDetail(chat_detail);
 
-    await this.props.setMessage({
-      load_message: true,
-      message_list: [],
-      chat_detail
-    });
+    if (getContactDetail.status) {
+      await this.props.setMessage({
+        load_message: true,
+        message_list: [],
+        chat_detail
+      });
 
-    // await this.props.setMessage({ chat_detail, message_list });
-    // await this.props.setMessage({ load_message: false });
+      const getChatData = await this.getChatData(chat_detail.loan_id);
+
+      console.log("getChatData", getChatData);
+
+      // ADD COMBINE INCOMING AND OUTGOING
+      // ADD SORT BY MESSAGE INDEX
+
+      if (getChatData.status) {
+        await this.props.setMessage({
+          load_message: false,
+          message_list: []
+        });
+      } else {
+        await this.props.setMessage({ load_message: false });
+      }
+    }
   };
+
+  getContactDetail = async payload => {
+    let resultData = { status: false };
+
+    try {
+      const response = await axios.post(
+        process.env.REACT_APP_API_END_POINT + "/omnichannel/details",
+        { ...payload }
+      );
+  
+      if (response.status === 200 && response.data.status === 'SUCCESS') {
+        resultData.status = true;
+        resultData.data = response.data.contactData[1];
+      }
+    } catch(error) {
+      console.log("getContactDetail.failed", error);
+    } finally {
+      return resultData;
+    }
+  }
+
+  getChatData = async loan_id => {
+    let resultData = { status: false };
+
+    try {
+      const response = await axios.post(
+        process.env.REACT_APP_API_END_POINT + "/omnichannel/chats",
+        { loan_id }
+      );
+  
+      if (response.status === 200 && response.data.status === 'SUCCESS') {
+        resultData.status = true;
+        resultData.data = response.data.chatData;
+      }
+    } catch(error) {
+      console.log("getChatData.failed", error);
+    } finally {
+      return resultData;
+    }
+  }
 
   getChatList() {
     setTimeout(() => {
