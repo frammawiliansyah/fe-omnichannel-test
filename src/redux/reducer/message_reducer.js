@@ -5,7 +5,10 @@ const initState = {
     loan_id: null,
     username: null,
     message: null,
-    va_number: null
+    va_number: null,
+    loan_status: null,
+    loan_amount: null,
+    loan_length: null
   },
   message_list: [],
   load_message: false,

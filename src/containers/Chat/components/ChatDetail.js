@@ -29,6 +29,14 @@ class ChatDetail extends Component {
             <Label sm={8} className="text-detail-value">: {this.props.chat_detail.loan_id}</Label>
           </FormGroup>
           <FormGroup row>
+            <Label sm={4} className="text-right">Loan Status</Label>
+            <Label sm={8} className="text-detail-value">: {this.props.chat_detail.loan_status}</Label>
+          </FormGroup>
+          <FormGroup row>
+            <Label sm={4} className="text-right">Loan Amount</Label>
+            <Label sm={8} className="text-detail-value">: {this.props.chat_detail.loan_amount}</Label>
+          </FormGroup>
+          <FormGroup row>
             <Label sm={4} className="text-right">Virtual Account</Label>
             <Label sm={8} className="text-detail-value">: {this.props.chat_detail.va_number}</Label>
           </FormGroup>

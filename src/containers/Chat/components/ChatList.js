@@ -50,7 +50,9 @@ class ChatList extends Component {
       loan_id: selected.id,
       username: selected.pj_loan_detail.fullName.toUpperCase(),
       message: "message",
-      va_number: selected.pj_loan_disburse.virtualAccountNumber
+      va_number: selected.pj_loan_disburse.virtualAccountNumber,
+      loan_status: selected.loanStatus.toUpperCase(),
+      loan_amount: selected.loanAmount
     };
 
     this.setState({
