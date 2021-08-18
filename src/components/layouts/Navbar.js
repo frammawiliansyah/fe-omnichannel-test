@@ -54,7 +54,7 @@ class Header extends React.Component {
                 <div className="text-capitalize">
                   <b>
                     {this.props.user.account
-                      ? this.props.user.account.username
+                      ? this.props.user.account.username.toUpperCase()
                       : null}
                   </b>
                 </div>

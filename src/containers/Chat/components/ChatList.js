@@ -7,7 +7,7 @@ import { FiSearch } from "react-icons/fi";
 // images
 import logo from "../../../assets/images/logo.svg";
 import { Button, Input, Spinner } from "reactstrap";
-import { Avatar, List } from "antd";
+import { Avatar, List, Spin } from "antd";
 import { connect } from "react-redux";
 import { setMessage } from "../../../redux/action/message_action";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -16,60 +16,73 @@ class ChatList extends Component {
   state = {
     loan_id: null,
     chat_list: this.props.chat_list,
-    loans: []
+    loans: [],
+    loading: false
   };
 
   componentDidMount() {
     this.loanDataAPI();
-    this.numberListAPI();
   }
 
   loanDataAPI = async payload => {
+    this.setState({ loading: true });
+
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
       {}
     );
 
     if (response.status === 200 && response.data.status === 'SUCCESS') {
-      this.setState({ loans: response.data.loanData });
+      this.setState({
+        loans: response.data.loanData,
+        loading: false
+      });
+    } else {
+      this.setState({ loading: false });
     }
   }
+  
+  getData = async loanId => {
+    const { loans } = this.state; 
+    const selected = loans.find( ({ id }) => Number(id) === Number(loanId) );
+    const chat_detail = {
+      number: selected.pj_loan_detail.mobileNumber,
+      loan_id: selected.id,
+      username: selected.pj_loan_detail.fullName.toUpperCase(),
+      message: "message",
+      va_number: selected.pj_loan_disburse.virtualAccountNumber
+    };
 
-  numberListAPI = async payload => {
-    const response = await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/conversation/get/numberList",
-      {},
-      {
-        validateStatus: function() {
-          return true;
-        }
-      }
-    );
-    if (response.data.numberList.length > 0) {
-      this.setState({
-        chat_list: response.data.numberList
-      });
-    }
+    this.setState({
+      loans: [ selected ],
+      loan_id: loanId
+    });
+
+    // let message_list = [];
+    // let chat_detail = this.state.chat_list.filter(
+    //   item => item.number === number
+    // )[0];
+    // const response = await axios.post(
+    //   process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
+    //   { number },
+    //   {
+    //     validateStatus: function() {
+    //       return true;
+    //     }
+    //   }
+    // );
+    // message_list = response.data.chatData;
+
+    await this.props.setMessage({
+      load_message: true,
+      message_list: [],
+      chat_detail
+    });
+
+    // await this.props.setMessage({ chat_detail, message_list });
+    // await this.props.setMessage({ load_message: false });
   };
-  getData = async number => {
-    let message_list = [];
-    let chat_detail = this.state.chat_list.filter(
-      item => item.number === number
-    )[0];
-    const response = await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
-      { number },
-      {
-        validateStatus: function() {
-          return true;
-        }
-      }
-    );
-    message_list = response.data.chatData;
-    await this.props.setMessage({ load_message: true, message_list: [] });
-    await this.props.setMessage({ chat_detail, message_list });
-    await this.props.setMessage({ load_message: false });
-  };
+
   getChatList() {
     setTimeout(() => {
       this.props.setMessage({
@@ -89,21 +102,30 @@ class ChatList extends Component {
   onSearch = async () => {
     let { loan_id } = this.state;
 
-    if (loan_id) {
+    if (loan_id === undefined && loan_id === null && loan_id === '') {
+      await this.loanDataAPI();
+    } else {
+      this.setState({ loading: true });
+
       const response = await axios.post(
         process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
         { loan_id }
       );
   
       if (response.status === 200 && response.data.status === 'SUCCESS') {
-        this.setState({ loans: response.data.loanData });
+        this.setState({
+          loans: response.data.loanData,
+          loading: false
+        });
+      } else {
+        this.setState({ loading: false });
       }
-
-      // this.props.setMessage({ chat_list: [...new_chat_list] });
     }
   }
 
   render() {
+    const { loans, loading } = this.state;
+
     return (
       <div className="chat-list-container">
         <div className="brand">
@@ -113,7 +135,7 @@ class ChatList extends Component {
           <div className="text-center input-search m-2 p-2">
             <div className="d-flex align-items-stretch">
               <Input
-                placeholder="Cari loan Id"
+                placeholder="Search Loan ID ..."
                 className="mr-2 custom-input-theme"
                 type="number"
                 value={this.state.loan_id}
@@ -141,34 +163,45 @@ class ChatList extends Component {
               scrollableTarget="chat-history"
               style={{ overflow: "hidden" }}
             >
-              {this.state.loans.map((item, index) => (
-                <div className="chat-list p-2">
-                  <div
-                    style={{ cursor: "pointer" }}
-                    onClick={() => this.getData(item.mobile_number)}
-                  >
+              {loading ? (
+                <div className="chat-list p-2 demo-loading">
+                  <div>
                     <List.Item>
-                      <List.Item.Meta
-                        avatar={
-                          <Avatar size={50}>
-                            <b>
-                              {item.full_name
-                                ? item.full_name.split("")[0]
-                                : null}
-                            </b>
-                          </Avatar>
-                        }
-                        title={`+62 ${
-                            Number(item.mobile_number)
-                              .toString()
-                              .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
-                          }`}
-                        description={`Loan ID : ${item.loan_id}`}
-                      />
+                      <Spin /> Fetching Data ...
                     </List.Item>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div>
+                  {loans.map((item, index) => (
+                    <div className="chat-list p-2">
+                      <div style={{ cursor: "pointer" }} onClick={() => this.getData(item.id)}>
+                        <List.Item>
+                          <List.Item.Meta
+                            avatar={
+                              <Avatar size={50}>
+                                <b>
+                                  {item.pj_loan_detail.fullName
+                                    ? item.pj_loan_detail.fullName.split("")[0]
+                                    : null}
+                                </b>
+                              </Avatar>
+                            }
+                            title={item.pj_loan_detail.fullName.toUpperCase()}
+                            description={
+                              `ID (${item.id}) - HP (0${
+                                Number(item.pj_loan_detail.mobileNumber)
+                                  .toString()
+                                  .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
+                              })`
+                            }
+                          />
+                        </List.Item>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </InfiniteScroll>
           </div>
         </div>

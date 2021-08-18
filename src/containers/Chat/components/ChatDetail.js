@@ -10,7 +10,7 @@ class ChatDetail extends Component {
     return (
       <div className="chat-detail-container p-3">
         <div className="text-center py-3">
-          <Avatar size={100}>
+          <Avatar size={100} className="avatar-chat-details">
             <b>
               {this.props.chat_detail.username
                 ? this.props.chat_detail.username.split("")[0]
@@ -21,16 +21,16 @@ class ChatDetail extends Component {
         <br />
         <div className="p-3">
           <FormGroup row>
-            <Label sm={4}>Nama</Label>
-            <Label sm={8}>{this.props.chat_detail.username}</Label>
+            <Label sm={4} className="text-right">Nama</Label>
+            <Label sm={8} className="text-detail-value">: {this.props.chat_detail.username}</Label>
           </FormGroup>
           <FormGroup row>
-            <Label sm={4}>Loan Id</Label>
-            <Label sm={8}>{this.props.chat_detail.loan_id}</Label>
+            <Label sm={4} className="text-right">Loan ID</Label>
+            <Label sm={8} className="text-detail-value">: {this.props.chat_detail.loan_id}</Label>
           </FormGroup>
           <FormGroup row>
-            <Label sm={4}>No VA</Label>
-            <Label sm={8}>{this.props.chat_detail.va_number}</Label>
+            <Label sm={4} className="text-right">Virtual Account</Label>
+            <Label sm={8} className="text-detail-value">: {this.props.chat_detail.va_number}</Label>
           </FormGroup>
         </div>
       </div>
