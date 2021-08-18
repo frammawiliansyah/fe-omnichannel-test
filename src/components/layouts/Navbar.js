@@ -51,6 +51,13 @@ class Header extends React.Component {
           <Row style={{ width: "120%" }}>
             <Col md="12" className="text-right">
               <Space size={24}>
+                <div className="text-capitalize">
+                  <b>
+                    {this.props.user.account
+                      ? this.props.user.account.username
+                      : null}
+                  </b>
+                </div>
                 <Button
                   style={{
                     borderRadius: "50%",
@@ -70,16 +77,20 @@ class Header extends React.Component {
                     <FiSun className="text-white" />
                   )}
                 </Button>
-                <Input type="select">
-                  <option value={1}>WhatsApp</option>
-                </Input>
-                <Avatar size={40}>
-                  <b>
-                    {this.props.user.account
-                      ? this.props.user.account.username
-                      : null}
-                  </b>
-                </Avatar>
+                { false ? (
+                  <Input type="select">
+                    <option value={1}>WhatsApp</option>
+                  </Input>
+                ) : null }
+                { false ? (
+                  <Avatar size={40}>
+                    <b>
+                      {this.props.user.account
+                        ? this.props.user.account.username
+                        : null}
+                    </b>
+                  </Avatar>
+                ) : null }
                 <Avatar
                   size={40}
                   style={{
@@ -92,7 +103,7 @@ class Header extends React.Component {
                     size={23}
                     onClick={() => {
                       localStorage.clear();
-                      window.location = "/";
+                      window.location.replace('/');
                     }}
                   />
                 </Avatar>

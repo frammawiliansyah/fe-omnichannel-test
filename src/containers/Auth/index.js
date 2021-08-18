@@ -37,21 +37,31 @@ class Auth extends Component {
   }
 
   submitForm = async e => {
-    this.setState({ isLoading: true, isHidden: true });
     e.preventDefault();
+
+    this.setState({
+      isLoading: true,
+      isHidden: true
+    });
+
     const { username, password } = this.state;
+
     await this.props.login(
       username,
       password,
       this.submitFormSuccess,
       this.submitFormFailed
     );
-    this.setState({ isLoading: false });
+
+    this.setState({
+      isLoading: false
+    });
   };
 
   submitFormSuccess = () => {
-    this.props.history.push("/chat");
+    window.location.replace('/chat');
   };
+
   submitFormFailed = () => {
     this.setState({ isHidden: false });
   };

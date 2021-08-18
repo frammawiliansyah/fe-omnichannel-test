@@ -15,11 +15,26 @@ import InfiniteScroll from "react-infinite-scroll-component";
 class ChatList extends Component {
   state = {
     loan_id: null,
-    chat_list: this.props.chat_list
+    chat_list: this.props.chat_list,
+    loans: []
   };
+
   componentDidMount() {
+    this.loanDataAPI();
     this.numberListAPI();
   }
+
+  loanDataAPI = async payload => {
+    const response = await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
+      {}
+    );
+
+    if (response.status === 200 && response.data.status === 'SUCCESS') {
+      this.setState({ loans: response.data.loanData });
+    }
+  }
+
   numberListAPI = async payload => {
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/conversation/get/numberList",
@@ -70,16 +85,24 @@ class ChatList extends Component {
       });
     }, 1500);
   }
-  onSearch() {
+  
+  onSearch = async () => {
     let { loan_id } = this.state;
+
     if (loan_id) {
-      this.setState({ loan_id });
-      let new_chat_list = this.state.chat_list.filter(
-        item => item.loan_id === parseInt(loan_id)
+      const response = await axios.post(
+        process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
+        { loan_id }
       );
-      this.props.setMessage({ chat_list: [...new_chat_list] });
+  
+      if (response.status === 200 && response.data.status === 'SUCCESS') {
+        this.setState({ loans: response.data.loanData });
+      }
+
+      // this.props.setMessage({ chat_list: [...new_chat_list] });
     }
   }
+
   render() {
     return (
       <div className="chat-list-container">
@@ -118,30 +141,29 @@ class ChatList extends Component {
               scrollableTarget="chat-history"
               style={{ overflow: "hidden" }}
             >
-              {this.state.chat_list.map((item, index) => (
+              {this.state.loans.map((item, index) => (
                 <div className="chat-list p-2">
                   <div
                     style={{ cursor: "pointer" }}
-                    onClick={() => this.getData(item.number)}
+                    onClick={() => this.getData(item.mobile_number)}
                   >
                     <List.Item>
                       <List.Item.Meta
                         avatar={
                           <Avatar size={50}>
                             <b>
-                              {item.username
-                                ? item.username.split("")[0]
+                              {item.full_name
+                                ? item.full_name.split("")[0]
                                 : null}
                             </b>
                           </Avatar>
                         }
                         title={`+62 ${
-                            item
-                              .number
+                            Number(item.mobile_number)
                               .toString()
                               .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
                           }`}
-                        description={""}
+                        description={`Loan ID : ${item.loan_id}`}
                       />
                     </List.Item>
                   </div>

@@ -38,26 +38,31 @@ class ChatMenu extends Component {
     isHiddenBtnScroll: true,
     scrollPosition: 999999999
   };
+
   componentDidMount() {
     /**
      * Will changed to Socket.
      */
-    setInterval(() => {
-      if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.replyCheck(this.props.chat_detail.number);
-    }, 30000);
 
-    setInterval(() => {
-      if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.requestCheck(this.props.chat_detail.number);
-    }, 300000);
+    // setInterval(() => {
+    //   if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.replyCheck(this.props.chat_detail.number);
+    // }, 30000);
+
+    // setInterval(() => {
+    //   if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.requestCheck(this.props.chat_detail.number);
+    // }, 300000);
   }
+
   componentDidUpdate() {
     let loan_id = this.props.chat_detail.loan_id;
+
     if (this.state.loan_id !== loan_id) {
       this.getData();
       document.getElementById("chat").scrollTop = 999999999;
       this.setState({ loan_id });
     }
   }
+
   requestCheck = async (number) => {
     await axios.post(
       process.env.REACT_APP_API_END_POINT + "/conversation/report",
@@ -71,6 +76,7 @@ class ChatMenu extends Component {
       }
     );
   }
+
   replyCheck = async (number) => {
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
@@ -85,9 +91,11 @@ class ChatMenu extends Component {
     await this.props.setMessage({ message_list: response.data.chatData });
     this.setScroll(this.state.scrollPosition);
   }
+
   setScroll(numb) {
     document.getElementById("chat").scrollTop = numb;
   }
+
   setInputHeight() {
     let { messageContent } = this.state;
     let inputRows = messageContent.split("\n").length * 24;
@@ -109,28 +117,34 @@ class ChatMenu extends Component {
       borderRadius: "1rem"
     };
   }
+
   getData() {
     const loan_id = this.props.chat_detail.loan_id;
     let chat_detail = this.props.chat_detail;
+
     chat_detail = this.props.chat_list.filter(
       item => item.loan_id === loan_id
     )[0];
-    if (chat_detail) {
-      this.props.setMessage({ chat_detail });
-    }
+
+    if (chat_detail) this.props.setMessage({ chat_detail });
   }
+
   handleChange = value => {
     this.props.setMessage(value);
   };
+
   onScrollChange() {
     let scrollPosition = document.getElementById("chat").scrollTop;
     let scrollHeight = document.getElementById("chat").scrollHeight;
+
     if (scrollHeight - scrollPosition > 1000 && this.state.isHiddenBtnScroll) {
       this.setState({ isHiddenBtnScroll: false });
     }
+    
     if (scrollHeight - scrollPosition < 1000 && !this.state.isHiddenBtnScroll) {
       this.setState({ isHiddenBtnScroll: true });
     }
+    
     if (scrollPosition === 0 && this.props.message_list.length < 15) {
       this.setState({ isScrollTop: true });
       setTimeout(async () => {
@@ -155,6 +169,7 @@ class ChatMenu extends Component {
       this.setState({ isScrollTop: false });
     }
   }
+
   handleMessage = message => {
     if (message !== undefined && message !== null) {
       let arr = message.split(/(https?:\/\/[^\s]+)/g);
@@ -168,6 +183,7 @@ class ChatMenu extends Component {
       return arr;
     }
   };
+
   onDeleteMessage = index => {
     let new_message_list = this.props.message_list;
     new_message_list[index].is_deletable = true;
@@ -175,6 +191,7 @@ class ChatMenu extends Component {
       message_list: [...new_message_list]
     });
   };
+
   async onSubmitMessage() {
     await axios.post(
       process.env.REACT_APP_API_END_POINT + "/message/send",
@@ -203,9 +220,11 @@ class ChatMenu extends Component {
         }
       ]
     });
+
     await this.setState({ message: "", image: null });
     this.setScroll(999999999);
   }
+
   render() {
     if (this.state.webSocket !== null) {
       this.state.webSocket.onmessage = e => {
@@ -214,6 +233,7 @@ class ChatMenu extends Component {
         console.log('e', message);
       };
     }
+
     return (
       <div>
         <div hidden={this.props.chat_detail.loan_id !== null}>
@@ -506,6 +526,7 @@ class ChatMenu extends Component {
     );
   }
 }
+
 const mapStateToProps = state => {
   return {
     message_list: state.message.message_list,
@@ -516,6 +537,7 @@ const mapStateToProps = state => {
     theme: state.user.theme
   };
 };
+
 export default connect(mapStateToProps, {
   setMessage
 })(ChatMenu);
