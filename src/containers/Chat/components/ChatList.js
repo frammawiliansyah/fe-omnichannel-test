@@ -16,15 +16,35 @@ class ChatList extends Component {
   state = {
     loan_id: null,
     chat_list: this.props.chat_list,
+    chat_detail: null,
     loans: [],
-    loading: false
+    loading: false,
+    intervalId: null
   };
 
   componentDidMount() {
     this.loanDataAPI();
+    const addInterval = setInterval(this.countdownTimer, 15000);
+    this.setState({intervalId: addInterval});
+  }
+  
+  componentWillUnmount() {
+    clearInterval(this.state.intervalId);
   }
 
-  loanDataAPI = async payload => {
+  countdownTimer = async => {
+    const { loan_id, chat_detail } = this.state;
+
+    if (loan_id !== null && chat_detail !== null) {
+      console.log("[WINDOWS.ACTIVE.REFRESH]", new Date());
+      this.getData(loan_id);
+      this.refreshData();
+    } else {
+      console.log("[WINDOWS.STANDBY.NOREFRESH]", new Date());
+    }
+  }
+
+  loanDataAPI = async () => {
     this.setState({ loading: true });
 
     const response = await axios.post(
@@ -33,13 +53,33 @@ class ChatList extends Component {
     );
 
     if (response.status === 200 && response.data.status === 'SUCCESS') {
-      this.setState({
-        loans: response.data.loanData,
-        loading: false
+      await this.props.setMessage({
+        load_message: false,
+        message_list: [],
+        chat_detail: {
+          number: null,
+          loan_id: null,
+          username: null,
+          message: null,
+          va_number: null,
+          loan_status: null,
+          loan_amount: null,
+          loan_length: null,
+          contact_id: null,
+          chat_id: null,
+        }
       });
+
+      this.setState({ loans: response.data.loanData, loading: false });
     } else {
       this.setState({ loading: false });
     }
+  }
+
+  refreshData = () => {
+    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
+      chat_id: this.props.chat_detail.chat_id
+    });
   }
   
   getData = async loanId => {
@@ -76,11 +116,12 @@ class ChatList extends Component {
 
       if (getChatData.status) {
         const message_list = getChatData.data[0].chat.incoming_messages.concat(getChatData.data[0].chat.outgoing_messages);
-
         await this.props.setMessage({
           load_message: false,
           message_list
         });
+
+        this.setState({ chat_detail });
       } else {
         await this.props.setMessage({ load_message: false });
       }
@@ -142,7 +183,7 @@ class ChatList extends Component {
       });
     }, 1500);
   }
-  
+
   onSearch = async () => {
     let { loan_id } = this.state;
 
@@ -179,10 +220,10 @@ class ChatList extends Component {
           <div className="text-center input-search m-2 p-2">
             <div className="d-flex align-items-stretch">
               <Input
+                type="number"
                 placeholder="Search Loan ID ..."
                 className="mr-2 custom-input-theme"
-                type="number"
-                value={this.state.loan_id}
+                value={this.state.loan_id || ''}
                 onChange={e => this.setState({ loan_id: e.target.value })}
               />
               <Button color="primary" onClick={() => this.onSearch()}>
@@ -218,7 +259,7 @@ class ChatList extends Component {
               ) : (
                 <div>
                   {loans.map((item, index) => (
-                    <div className="chat-list p-2">
+                    <div key={`chat-list-${index}`} className="chat-list p-2">
                       <div style={{ cursor: "pointer" }} onClick={() => this.getData(item.id)}>
                         <List.Item>
                           <List.Item.Meta
@@ -257,6 +298,7 @@ const mapStateToProps = state => {
   return {
     chat_list: state.message.chat_list,
     user: state.user.account,
+    chat_detail: state.message.chat_detail
   };
 };
 export default connect(mapStateToProps, { setMessage })(ChatList);

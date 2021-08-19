@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 // images
-import { FormGroup, Label, Spinner, Badge } from "reactstrap";
+import { FormGroup, Label } from "reactstrap";
 import { Avatar } from "antd";
 import { connect } from "react-redux";
 

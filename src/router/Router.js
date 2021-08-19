@@ -27,8 +27,6 @@ class AppConnect extends Component {
   checkAuthorization(spesificGrantedRoles) {
     let result = true;
 
-    console.log("checkAuthorization", this.props);
-
     // if (spesificGrantedRoles) {
     //   spesificGrantedRoles.map(role => {
     //     if (role === this.props.role) {

@@ -28,44 +28,26 @@ import axios from "axios";
 
 class ChatMenu extends Component {
   state = {
-    urlSocket: "ws://localhost:3009/echo",
-    webSocket: null,
     number: this.props.chat_detail.number,
     messageContent: "",
     image: null,
     loan_id: null,
     isScrollTop: false,
     isHiddenBtnScroll: true,
-    scrollPosition: 999999999,
-    intervalId: null
+    scrollPosition: 999999999
   };
 
   componentDidMount() {}
 
   componentDidUpdate() {
     const loanId = this.props.chat_detail.loan_id;
-    const chatId = this.props.chat_detail.chat_id;
-    const { scrollPosition, loan_id, intervalId } = this.state;
+    const { scrollPosition, loan_id } = this.state;
 
     if (loan_id !== loanId) {
       this.getData();
       this.setScroll(scrollPosition);
       this.setState({ loan_id: loanId });
     }
-
-    console.log("chatId", chatId, intervalId);
-    if (intervalId === null && chatId !== null) {
-      const intervalData = setInterval(this.refreshData(chatId), 300000);
-      this.setState({ intervalId: intervalData });
-    }
-  }
-
-  refreshData = async chatId => {
-    console.log("refreshData", new Date());
-    await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh",
-      { chat_id: chatId }
-    );
   }
 
   setScroll(numb) {
@@ -168,10 +150,9 @@ class ChatMenu extends Component {
     });
   };
 
-  async onSubmitMessage() {
+  onSubmitMessage = async () => {
     const { contact_id, chat_id, number } = this.props.chat_detail;
     const { messageContent, scrollPosition } = this.state;
-
     const payloadData = {
       contact_id,
       chat_id,
@@ -269,9 +250,8 @@ class ChatMenu extends Component {
                     {message_list.map((item, index) => {
                       if (item.adminUserId === undefined) {
                         let content = JSON.parse(item.messageContent);
-                        console.log(content);
                         return (
-                          <li className="you" hidden={item.is_deletable}>
+                          <li className="you" hidden={item.is_deletable} key={`messageList_${index}`}>
                             { item.messageDate === null ? null : (
                               <div
                                 className="text-center my-2"
@@ -322,9 +302,8 @@ class ChatMenu extends Component {
                           </li>
                         );
                       } else {
-                        console.log("item.messageContent", item.messageContent);
                         return (
-                          <li className="me" hidden={item.is_deletable}>
+                          <li className="me" hidden={item.is_deletable} key={`messageList_${index}`}>
                             { item.messageDate === null ? null : (
                               <div
                                 className="text-center my-2"
