@@ -51,7 +51,7 @@ class ChatList extends Component {
       username: selected.pj_loan_detail.fullName.toUpperCase(),
       va_number: selected.pj_loan_disburse.virtualAccountNumber,
       loan_status: selected.loanStatus.toUpperCase(),
-      loan_amount: selected.loanAmount
+      loan_amount: selected.loanAmount,
     };
 
     this.setState({
@@ -62,23 +62,24 @@ class ChatList extends Component {
     const getContactDetail = await this.getContactDetail(chat_detail);
 
     if (getContactDetail.status) {
+      chat_detail.contact_id = getContactDetail.data.id;
+      chat_detail.chat_id = getContactDetail.data.chat.id;
+      chat_detail.admin_user_id = this.props.user.id;
+
       await this.props.setMessage({
         load_message: true,
         message_list: [],
-        chat_detail
+        chat_detail,
       });
 
       const getChatData = await this.getChatData(chat_detail.loan_id);
 
-      console.log("getChatData", getChatData);
-
-      // ADD COMBINE INCOMING AND OUTGOING
-      // ADD SORT BY MESSAGE INDEX
-
       if (getChatData.status) {
+        const message_list = getChatData.data[0].chat.incoming_messages.concat(getChatData.data[0].chat.outgoing_messages);
+
         await this.props.setMessage({
           load_message: false,
-          message_list: []
+          message_list
         });
       } else {
         await this.props.setMessage({ load_message: false });
@@ -97,7 +98,7 @@ class ChatList extends Component {
   
       if (response.status === 200 && response.data.status === 'SUCCESS') {
         resultData.status = true;
-        resultData.data = response.data.contactData[1];
+        resultData.data = response.data.contactData;
       }
     } catch(error) {
       console.log("getContactDetail.failed", error);
@@ -254,7 +255,8 @@ class ChatList extends Component {
 }
 const mapStateToProps = state => {
   return {
-    chat_list: state.message.chat_list
+    chat_list: state.message.chat_list,
+    user: state.user.account,
   };
 };
 export default connect(mapStateToProps, { setMessage })(ChatList);

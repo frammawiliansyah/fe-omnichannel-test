@@ -10,11 +10,13 @@ class MainLayout extends React.Component {
     };
     this.handleClick = this.handleClick.bind(this);
   }
+
   handleClick() {
     this.setState({
       activeSidebar: !this.state.activeSidebar
     });
   }
+
   render() {
     const { children } = this.props;
     return (

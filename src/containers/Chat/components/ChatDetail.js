@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 // images
-import { FormGroup, Label } from "reactstrap";
+import { FormGroup, Label, Spinner, Badge } from "reactstrap";
 import { Avatar } from "antd";
 import { connect } from "react-redux";
 
@@ -51,4 +51,5 @@ const mapStateToProps = state => {
     chat_detail: state.message.chat_detail
   };
 };
+
 export default connect(mapStateToProps)(ChatDetail);

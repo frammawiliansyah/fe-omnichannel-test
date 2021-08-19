@@ -4,7 +4,7 @@ const initState = {
   account: null,
   admin_user_id: null,
   role: null,
-  theme: "light"
+  theme: "light",
 };
 
 export const user = (state = initState, action) => {

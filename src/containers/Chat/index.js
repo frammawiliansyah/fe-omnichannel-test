@@ -36,60 +36,36 @@ class ChatMenu extends Component {
     loan_id: null,
     isScrollTop: false,
     isHiddenBtnScroll: true,
-    scrollPosition: 999999999
+    scrollPosition: 999999999,
+    intervalId: null
   };
 
-  componentDidMount() {
-    /**
-     * Will changed to Socket.
-     */
-
-    // setInterval(() => {
-    //   if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.replyCheck(this.props.chat_detail.number);
-    // }, 30000);
-
-    // setInterval(() => {
-    //   if (this.props.chat_detail.number !== undefined && this.props.chat_detail.number !== null) this.requestCheck(this.props.chat_detail.number);
-    // }, 300000);
-  }
+  componentDidMount() {}
 
   componentDidUpdate() {
-    let loan_id = this.props.chat_detail.loan_id;
+    const loanId = this.props.chat_detail.loan_id;
+    const chatId = this.props.chat_detail.chat_id;
+    const { scrollPosition, loan_id, intervalId } = this.state;
 
-    if (this.state.loan_id !== loan_id) {
+    if (loan_id !== loanId) {
       this.getData();
-      document.getElementById("chat").scrollTop = 999999999;
-      this.setState({ loan_id });
+      this.setScroll(scrollPosition);
+      this.setState({ loan_id: loanId });
+    }
+
+    console.log("chatId", chatId, intervalId);
+    if (intervalId === null && chatId !== null) {
+      const intervalData = setInterval(this.refreshData(chatId), 300000);
+      this.setState({ intervalId: intervalData });
     }
   }
 
-  requestCheck = async (number) => {
+  refreshData = async chatId => {
+    console.log("refreshData", new Date());
     await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/conversation/report",
-      {
-        whatsapp_number: number
-      },
-      {
-        validateStatus: function() {
-          return true;
-        }
-      }
+      process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh",
+      { chat_id: chatId }
     );
-  }
-
-  replyCheck = async (number) => {
-    const response = await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/conversation/get/chatData",
-      { number },
-      {
-        validateStatus: function() {
-          return true;
-        }
-      }
-    );
-
-    await this.props.setMessage({ message_list: response.data.chatData });
-    this.setScroll(this.state.scrollPosition);
   }
 
   setScroll(numb) {
@@ -193,12 +169,21 @@ class ChatMenu extends Component {
   };
 
   async onSubmitMessage() {
+    const { contact_id, chat_id, number } = this.props.chat_detail;
+    const { messageContent, scrollPosition } = this.state;
+
+    const payloadData = {
+      contact_id,
+      chat_id,
+      admin_user_id: this.props.user.id,
+      mobile_number: Number(number),
+      message_content: messageContent,
+      message_status: 'SEND'
+    }
+
     await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/message/send",
-      {
-        whatsapp_number: this.state.number,
-        message: this.state.messageContent,
-      },
+      process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/send",
+      { ...payloadData },
       {
         validateStatus: function() {
           return true;
@@ -211,29 +196,27 @@ class ChatMenu extends Component {
         ...this.props.message_list,
         {
           id: null,
-          messageContent: this.state.messageContent,
-          messageDate: new Date(),
-          messageStatus: "SENT",
-          messageType: "MESSAGE-OUT",
-          number: this.state.number,
-          createdAt: new Date(),
+          contactId: payloadData.contact_id,
+          chatId: payloadData.chat_id,
+          adminUserId: payloadData.admin_user_id,
+          messageContent,
+          messageStatus: payloadData.message_status,
+          messageDate: null,
+          processedAt: null,
+          createdAt: null,
+          messageType: 'MESSAGE-OUT',
         }
       ]
     });
 
-    await this.setState({ message: "", image: null });
-    this.setScroll(999999999);
+    this.setState({ messageContent: "", image: null });
+    this.setScroll(scrollPosition);
   }
 
   render() {
-    if (this.state.webSocket !== null) {
-      this.state.webSocket.onmessage = e => {
-        console.log('e', e);
-        const message = JSON.parse(e.data);
-        console.log('e', message);
-      };
-    }
-
+    const { message_list } = this.props;
+    const { scrollPosition } = this.state;
+    
     return (
       <div>
         <div hidden={this.props.chat_detail.loan_id !== null}>
@@ -283,55 +266,47 @@ class ChatMenu extends Component {
                         Memuat data... <Spinner size="sm" color="white" />
                       </Badge>
                     </div>
-                    {this.props.message_list.map((item, index) => {
-                      if (item.messageType === 'MESSAGE-IN') {
+                    {message_list.map((item, index) => {
+                      if (item.adminUserId === undefined) {
+                        let content = JSON.parse(item.messageContent);
+                        console.log(content);
                         return (
                           <li className="you" hidden={item.is_deletable}>
-                            <div
-                              className="text-center my-2"
-                              hidden={
-                                index > 0 &&
-                                moment(
-                                  this.props.message_list[index - 1].date
-                                ).format("DD/MM/YYYY") ===
-                                  moment(item.messageDate).format("DD/MM/YYYY")
-                              }
-                            >
-                              <Badge>
-                                {moment(item.messageDate).format("DD/MM/YYYY")}
-                              </Badge>
-                            </div>
-                            <div className="d-flex justify-content-start">
+                            { item.messageDate === null ? null : (
                               <div
-                                hidden={item.loan_id === 2}
-                                style={{
-                                  visibility:
-                                    index > 0 &&
-                                    this.props.message_list[index - 1]
-                                      .loan_id === item.loan_id
-                                      ? "hidden"
-                                      : "visible"
-                                }}
-                                className="mr-2"
+                                className="text-center my-2"
+                                hidden={
+                                  index > 0 &&
+                                  moment(
+                                    message_list[index - 1].date
+                                  ).format("DD/MM/YYYY") ===
+                                    moment(item.messageDate).format("DD/MM/YYYY")
+                                }
                               >
-                                <Avatar size={50}>
-                                  <b>{item.number}</b>
-                                </Avatar>
+                                <Badge>
+                                  {moment(item.messageDate).format("DD/MM/YYYY")}
+                                </Badge>
                               </div>
+                            )}
+                            <div className="d-flex justify-content-start">
                               <div className="message-box">
                                 <div className="message">
-                                  {item.is_image ? (
+                                  {content.is_image === 'true' ? (
                                     <Image
                                       src={item.message}
                                       alt="document"
                                       width="150px"
                                     />
                                   ) : (
-                                    this.handleMessage(item.messageContent)
+                                    this.handleMessage(content.text)
                                   )}
                                 </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
-                                  <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                  { item.messageDate === null ? (
+                                    <div>On Progress ...</div>
+                                  ) : (
+                                    <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                  ) }
                                   <div className="ml-2 message-delete">
                                     <MdDelete
                                       size="18"
@@ -347,22 +322,25 @@ class ChatMenu extends Component {
                           </li>
                         );
                       } else {
+                        console.log("item.messageContent", item.messageContent);
                         return (
                           <li className="me" hidden={item.is_deletable}>
-                            <div
-                              className="text-center my-2"
-                              hidden={
-                                index > 0 &&
-                                moment(
-                                  this.props.message_list[index - 1].date
-                                ).format("DD/MM/YYYY") ===
-                                  moment(item.messageDate).format("DD/MM/YYYY")
-                              }
-                            >
-                              <Badge>
-                                {moment(item.messageDate).format("DD/MM/YYYY")}
-                              </Badge>
-                            </div>
+                            { item.messageDate === null ? null : (
+                              <div
+                                className="text-center my-2"
+                                hidden={
+                                  index > 0 &&
+                                  moment(
+                                    message_list[index - 1].date
+                                  ).format("DD/MM/YYYY") ===
+                                    moment(item.messageDate).format("DD/MM/YYYY")
+                                }
+                              >
+                                <Badge>
+                                  {moment(item.messageDate).format("DD/MM/YYYY")}
+                                </Badge>
+                              </div>
+                            )}
                             <div className="d-flex justify-content-end">
                               <div className="message-box">
                                 <div className="message">
@@ -377,7 +355,11 @@ class ChatMenu extends Component {
                                   )}
                                 </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
-                                  <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                  { item.messageDate === null ? (
+                                    <div>On Progress ...</div>
+                                  ) : (
+                                    <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                  )}
                                   <div className="ml-2 message-delete">
                                     <MdDelete
                                       size="18"
@@ -394,7 +376,7 @@ class ChatMenu extends Component {
                                 style={{
                                   visibility:
                                     index > 0 &&
-                                    this.props.message_list[index - 1]
+                                    message_list[index - 1]
                                       .loan_id === item.loan_id
                                       ? "hidden"
                                       : "visible"
@@ -419,7 +401,7 @@ class ChatMenu extends Component {
                       hidden={this.state.isHiddenBtnScroll}
                     >
                       <Badge
-                        onClick={() => this.setScroll(999999999)}
+                        onClick={() => this.setScroll(scrollPosition)}
                         color="info"
                         className="cp"
                       >
@@ -534,7 +516,8 @@ const mapStateToProps = state => {
     chat_detail: state.message.chat_detail,
     username: state.user.account,
     load_message: state.message.load_message,
-    theme: state.user.theme
+    theme: state.user.theme,
+    user: state.user.account,
   };
 };
 
