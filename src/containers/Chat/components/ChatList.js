@@ -7,128 +7,93 @@ import { FiSearch } from "react-icons/fi";
 // images
 import logo from "../../../assets/images/logo.svg";
 import { Button, Input, Spinner } from "reactstrap";
-import { Avatar, List, Spin } from "antd";
+import { Avatar, List } from "antd";
 import { connect } from "react-redux";
 import { setMessage } from "../../../redux/action/message_action";
 import InfiniteScroll from "react-infinite-scroll-component";
 
+import { io } from "socket.io-client";
+
 class ChatList extends Component {
   state = {
     loan_id: null,
-    chat_list: this.props.chat_list,
-    chat_detail: null,
-    loans: [],
-    loading: false,
-    intervalId: null
+    contactList: [],
+    chat_detail: {
+      number: null,
+      loan_id: null,
+      username: null,
+      message: null,
+      va_number: null,
+      loan_status: null,
+      loan_amount: null,
+      loan_length: null,
+      contact_id: null,
+      chat_id: null,
+    },
+    loadingList: true,
+    totalList: 0,
+    intervalId: null,
+    socket: io(process.env.REACT_APP_API_END_POINT, {
+      path: "/echo/"
+    })
   };
 
   componentDidMount() {
-    this.loanDataAPI();
-    const addInterval = setInterval(this.countdownTimer, 15000);
-    this.setState({intervalId: addInterval});
-  }
-  
-  componentWillUnmount() {
-    clearInterval(this.state.intervalId);
+    const self = this;
+    const { socket } = self.state;
+
+    self.contactListAPI();
+    socket.on("connect", () => console.log("connect", socket.id));
+    socket.on("disconnect", () => console.log("disconnect", socket.id));
+    socket.on(`${process.env.REACT_APP_SOCK_END_POINT}`, payload => {
+      self.consumerSocket(payload);
+    });
   }
 
-  countdownTimer = async => {
-    const { loan_id, chat_detail } = this.state;
+  publisherSocket = (payload) => {
+    this.state.socket.emit(
+      `${process.env.REACT_APP_SOCK_END_POINT}::CALLBACK`,
+      payload
+    );
+  }
 
-    if (loan_id !== null && chat_detail !== null) {
-      console.log("[WINDOWS.ACTIVE.REFRESH]", new Date());
-      this.getData(loan_id);
-      this.refreshData();
-    } else {
-      console.log("[WINDOWS.STANDBY.NOREFRESH]", new Date());
+  consumerSocket = async (payload) => {
+    const loanId = this.state.loan_id;
+    if (loanId !== null) {
+      console.log("Sock.Payload", payload);
     }
   }
 
-  loanDataAPI = async () => {
-    this.setState({ loading: true });
+  contactListAPI = async (onSearch = null) => {
+    let chatDataList = {};
+    const loanId = this.state.loan_id;
+    const payload = { offset: this.props.chat_list.length };
+    
+    if (loanId !== null && loanId !== '' && loanId !== 0) payload.loan_id = loanId;
 
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
-      {}
+      payload
     );
 
     if (response.status === 200 && response.data.status === 'SUCCESS') {
-      await this.props.setMessage({
-        load_message: false,
-        message_list: [],
-        chat_detail: {
-          number: null,
-          loan_id: null,
-          username: null,
-          message: null,
-          va_number: null,
-          loan_status: null,
-          loan_amount: null,
-          loan_length: null,
-          contact_id: null,
-          chat_id: null,
-        }
-      });
-
-      this.setState({ loans: response.data.loanData, loading: false });
-    } else {
-      this.setState({ loading: false });
-    }
-  }
-
-  refreshData = () => {
-    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
-      chat_id: this.props.chat_detail.chat_id
-    });
-  }
-  
-  getData = async loanId => {
-    const { loans } = this.state; 
-    const selected = loans.find( ({ id }) => Number(id) === Number(loanId) );
-    const chat_detail = {
-      number: selected.pj_loan_detail.mobileNumber,
-      loan_id: selected.id,
-      username: selected.pj_loan_detail.fullName.toUpperCase(),
-      va_number: selected.pj_loan_disburse.virtualAccountNumber,
-      loan_status: selected.loanStatus.toUpperCase(),
-      loan_amount: selected.loanAmount,
-    };
-
-    this.setState({
-      loans: [ selected ],
-      loan_id: loanId
-    });
-
-    const getContactDetail = await this.getContactDetail(chat_detail);
-
-    if (getContactDetail.status) {
-      chat_detail.contact_id = getContactDetail.data.id;
-      chat_detail.chat_id = getContactDetail.data.chat.id;
-      chat_detail.admin_user_id = this.props.user.id;
-
-      await this.props.setMessage({
-        load_message: true,
-        message_list: [],
-        chat_detail,
-      });
-
-      const getChatData = await this.getChatData(chat_detail.loan_id);
-
-      if (getChatData.status) {
-        const message_list = getChatData.data[0].chat.incoming_messages.concat(getChatData.data[0].chat.outgoing_messages);
-        await this.props.setMessage({
-          load_message: false,
-          message_list
-        });
-
-        this.setState({ chat_detail });
+      if (onSearch === null) {
+        chatDataList = { chat_list: this.props.chat_list.concat(response.data.loanData) }
       } else {
-        await this.props.setMessage({ load_message: false });
+        chatDataList = { chat_list: response.data.loanData }
       }
-    }
-  };
 
-  getContactDetail = async payload => {
+      await this.props.setMessage( chatDataList );
+      await this.setState({
+        contactList: this.props.chat_list,
+        totalList: response.data.countData
+      });
+    }
+
+    this.setState({ loadingList: false });
+  }
+
+  contactDetailAPI = async (payload) => {
     let resultData = { status: false };
 
     try {
@@ -142,13 +107,13 @@ class ChatList extends Component {
         resultData.data = response.data.contactData;
       }
     } catch(error) {
-      console.log("getContactDetail.failed", error);
+      console.log("contactDetailAPI", error);
     } finally {
       return resultData;
     }
   }
 
-  getChatData = async loan_id => {
+  chatDataAPI = async loan_id => {
     let resultData = { status: false };
 
     try {
@@ -162,54 +127,63 @@ class ChatList extends Component {
         resultData.data = response.data.chatData;
       }
     } catch(error) {
-      console.log("getChatData.failed", error);
+      console.log("chatDataAPI", error);
     } finally {
       return resultData;
     }
   }
 
-  getChatList() {
-    setTimeout(() => {
-      this.props.setMessage({
-        chat_list: [
-          ...this.state.chat_list,
-          {
-            loan_id: 100001,
-            username: "Boby",
-            message: "Hello",
-            va_number: 111
-          }
-        ]
+  getContactDetail = async (loanId) => {
+    const { contactList } = this.state; 
+    const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
+    const chatDetail = {
+      number: contactData.pj_loan_detail.mobileNumber,
+      loan_id: contactData.id,
+      username: contactData.pj_loan_detail.fullName.toUpperCase(),
+      va_number: contactData.pj_loan_disburse.virtualAccountNumber,
+      loan_status: contactData.loanStatus.toUpperCase(),
+      loan_amount: contactData.loanAmount,
+    };
+
+    this.setState({ contactList: [ contactData ], loan_id: loanId });
+    const contactDetail = await this.contactDetailAPI(chatDetail);
+
+    if (contactDetail.status) {
+      chatDetail.contact_id = contactDetail.data.id;
+      chatDetail.chat_id = contactDetail.data.chat.id;
+      chatDetail.admin_user_id = this.props.user.id;
+
+      await this.props.setMessage({
+        message_list: [],
+        load_message: true,
+        chat_detail: chatDetail,
       });
-    }, 1500);
-  }
 
-  onSearch = async () => {
-    let { loan_id } = this.state;
+      const chatData = await this.chatDataAPI(chatDetail.loan_id);
 
-    if (loan_id === undefined && loan_id === null && loan_id === '') {
-      await this.loanDataAPI();
-    } else {
-      this.setState({ loading: true });
-
-      const response = await axios.post(
-        process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
-        { loan_id }
-      );
-  
-      if (response.status === 200 && response.data.status === 'SUCCESS') {
-        this.setState({
-          loans: response.data.loanData,
-          loading: false
+      if (chatData.status) {
+        const message_list = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
+        await this.props.setMessage({
+          load_message: false,
+          message_list
         });
+
+        this.setState({ chat_detail: chatDetail });
       } else {
-        this.setState({ loading: false });
+        await this.props.setMessage({ load_message: false });
       }
     }
+  };
+
+  refreshData = () => {
+    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
+      chat_id: this.props.chat_detail.chat_id
+    });
   }
 
   render() {
-    const { loans, loading } = this.state;
+    const { contactList, totalList } = this.state;
+    const chatList = this.props.chat_list;
 
     return (
       <div className="chat-list-container">
@@ -226,7 +200,7 @@ class ChatList extends Component {
                 value={this.state.loan_id || ''}
                 onChange={e => this.setState({ loan_id: e.target.value })}
               />
-              <Button color="primary" onClick={() => this.onSearch()}>
+              <Button color="primary" onClick={() => this.contactListAPI(true)}>
                 <FiSearch />
               </Button>
             </div>
@@ -234,59 +208,44 @@ class ChatList extends Component {
           <br />
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll
-              dataLength={this.state.chat_list}
-              next={() => this.getChatList()}
-              hasMore={
-                this.state.chat_list.length > 0 &&
-                this.state.chat_list.length <= 20
-              }
+              dataLength={chatList.length}
+              next={() => this.contactListAPI()}
+              hasMore={chatList.length >= 0 && chatList.length < totalList}
+              scrollableTarget="chat-history"
+              style={{ overflow: "hidden" }}
               loader={
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
                 </div>
               }
-              scrollableTarget="chat-history"
-              style={{ overflow: "hidden" }}
             >
-              {loading ? (
-                <div className="chat-list p-2 demo-loading">
-                  <div>
+              {contactList.map((item, index) => (
+                <div key={`chat-list-${index}`} className="chat-list p-2">
+                  <div style={{ cursor: "pointer" }} onClick={() => this.getContactDetail(item.id)}>
                     <List.Item>
-                      <Spin /> Fetching Data ...
+                      <List.Item.Meta
+                        avatar={
+                          <Avatar size={50}>
+                            <b>
+                              {item.pj_loan_detail.fullName
+                                ? item.pj_loan_detail.fullName.split("")[0]
+                                : null}
+                            </b>
+                          </Avatar>
+                        }
+                        title={item.pj_loan_detail.fullName.toUpperCase()}
+                        description={
+                          `ID (${item.id}) - HP (0${
+                            Number(item.pj_loan_detail.mobileNumber)
+                              .toString()
+                              .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
+                          })`
+                        }
+                      />
                     </List.Item>
                   </div>
                 </div>
-              ) : (
-                <div>
-                  {loans.map((item, index) => (
-                    <div key={`chat-list-${index}`} className="chat-list p-2">
-                      <div style={{ cursor: "pointer" }} onClick={() => this.getData(item.id)}>
-                        <List.Item>
-                          <List.Item.Meta
-                            avatar={
-                              <Avatar size={50}>
-                                <b>
-                                  {item.pj_loan_detail.fullName
-                                    ? item.pj_loan_detail.fullName.split("")[0]
-                                    : null}
-                                </b>
-                              </Avatar>
-                            }
-                            title={item.pj_loan_detail.fullName.toUpperCase()}
-                            description={
-                              `ID (${item.id}) - HP (0${
-                                Number(item.pj_loan_detail.mobileNumber)
-                                  .toString()
-                                  .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
-                              })`
-                            }
-                          />
-                        </List.Item>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </InfiniteScroll>
           </div>
         </div>
@@ -294,6 +253,7 @@ class ChatList extends Component {
     );
   }
 }
+
 const mapStateToProps = state => {
   return {
     chat_list: state.message.chat_list,
@@ -301,4 +261,5 @@ const mapStateToProps = state => {
     chat_detail: state.message.chat_detail
   };
 };
+
 export default connect(mapStateToProps, { setMessage })(ChatList);
