@@ -22,7 +22,7 @@ class ChatList extends Component {
     totalList: 0,
     intervalId: null,
     scrollPosition: 999999999,
-    socket: io("https://omnichannel.pinjammodal.io", {
+    socket: io(`${process.env.REACT_APP_API_END_POINT}`, {
       path: "/echo/"
     })
   };
