@@ -22,8 +22,8 @@ class ChatList extends Component {
     totalList: 0,
     intervalId: null,
     scrollPosition: 999999999,
-    socket: io(process.env.REACT_APP_API_END_POINT, {
-      path: "/omnichannel/echo/"
+    socket: io(`http://20.198.170.239:3009`, {
+      path: "/echo/"
     })
   };
 
