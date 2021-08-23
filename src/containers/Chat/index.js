@@ -34,30 +34,32 @@ class ChatMenu extends Component {
     loan_id: null,
     isScrollTop: false,
     isHiddenBtnScroll: true,
-    scrollPosition: 999999999
+    scrollPosition: 999999999,
+    imageUrl: {}
   };
 
   componentDidMount() {}
 
   componentDidUpdate() {
-    const loanId = this.props.chat_detail.loan_id;
-    const { scrollPosition, loan_id } = this.state;
+    const propsLoanId = this.props.chat_detail.loan_id;
+    const stateLoanId = this.state.loan_id;
 
-    if (loan_id !== loanId) {
-      this.getData();
-      this.setScroll(scrollPosition);
-      this.setState({ loan_id: loanId });
+    if (propsLoanId !== stateLoanId) {
+      this.setScroll( this.state.scrollPosition );
+      this.setState({
+        loan_id: propsLoanId
+      });
     }
   }
 
-  setScroll(numb) {
-    document.getElementById("chat").scrollTop = numb;
-  }
+  setScroll = (scroolNumber) => document.getElementById("chat").scrollTop = scroolNumber;
+  handleChange = (value) => this.props.setMessage(value);
 
   setInputHeight() {
     let { messageContent } = this.state;
     let inputRows = messageContent.split("\n").length * 24;
     let inputHeight = inputRows + 20 + "px";
+    
     if (inputRows > 216) {
       return {
         height: "236px",
@@ -66,31 +68,18 @@ class ChatMenu extends Component {
         resize: "none",
         borderRadius: "1rem"
       };
-    }
-    return {
-      height: inputHeight,
-      padding: "10px",
-      overflow: "hidden",
-      resize: "none",
-      borderRadius: "1rem"
-    };
+    } else {
+      return {
+        height: inputHeight,
+        padding: "10px",
+        overflow: "hidden",
+        resize: "none",
+        borderRadius: "1rem"
+      };
+    }    
   }
 
-  getData() {
-    const loan_id = this.props.chat_detail.loan_id;
-    let chat_detail = this.props.chat_detail;
-
-    chat_detail = this.props.chat_list.filter(
-      item => item.loan_id === loan_id
-    )[0];
-
-    if (chat_detail) this.props.setMessage({ chat_detail });
-  }
-
-  handleChange = value => {
-    this.props.setMessage(value);
-  };
-
+  // WILL BE FIXED
   onScrollChange() {
     let scrollPosition = document.getElementById("chat").scrollTop;
     let scrollHeight = document.getElementById("chat").scrollHeight;
@@ -119,9 +108,8 @@ class ChatMenu extends Component {
             ...this.props.message_list
           ]
         });
-        this.setScroll(
-          document.getElementById("chat").scrollHeight - scrollHeight
-        );
+
+        this.setScroll(document.getElementById("chat").scrollHeight - scrollHeight);
       }, 500);
     } else {
       this.setState({ isScrollTop: false });
@@ -138,10 +126,12 @@ class ChatMenu extends Component {
           </a>
         );
       }
+
       return arr;
     }
   };
 
+  // WILL BE DELETED
   onDeleteMessage = index => {
     let new_message_list = this.props.message_list;
     new_message_list[index].is_deletable = true;
@@ -153,45 +143,43 @@ class ChatMenu extends Component {
   onSubmitMessage = async () => {
     const { contact_id, chat_id, number } = this.props.chat_detail;
     const { messageContent, scrollPosition } = this.state;
-    const payloadData = {
-      contact_id,
-      chat_id,
-      admin_user_id: this.props.user.id,
-      mobile_number: Number(number),
-      message_content: messageContent,
-      message_status: 'SEND'
-    }
 
-    await axios.post(
-      process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/send",
-      { ...payloadData },
-      {
-        validateStatus: function() {
-          return true;
-        }
+    const sendMessage = await axios.post(
+      process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/send", {
+        contact_id,
+        chat_id,
+        admin_user_id: this.props.user.id,
+        mobile_number: Number(number),
+        message_content: messageContent,
+        message_status: 'SEND'
       }
     );
 
-    await this.handleChange({
-      message_list: [
-        ...this.props.message_list,
-        {
-          id: null,
-          contactId: payloadData.contact_id,
-          chatId: payloadData.chat_id,
-          adminUserId: payloadData.admin_user_id,
-          messageContent,
-          messageStatus: payloadData.message_status,
-          messageDate: null,
-          processedAt: null,
-          createdAt: null,
-          messageType: 'MESSAGE-OUT',
+    if (sendMessage.data.status === 'SUCCESS') {
+      await this.handleChange({ message_list: this.props.message_list.concat(sendMessage.data.outgoingMessage) });
+      await this.setState({ messageContent: "", image: null });
+    }
+
+    this.setScroll(scrollPosition);
+  }
+
+  getImageURL = async (image) => {
+    let resultData = await new Promise((resolve, reject) => {
+      axios.post(
+        process.env.REACT_APP_API_STORATE_END_POINT, {
+          filename: image.filename,
+          folder: `whatsapp/${image.folder}`
         }
-      ]
+      ).then(response => {
+        resolve(response);
+      }).catch(error => {
+        reject(error);
+      });
     });
 
-    this.setState({ messageContent: "", image: null });
-    this.setScroll(scrollPosition);
+    let imageUrl = this.state.imageUrl;
+        imageUrl[`${image.filename}`] = resultData.data.result;
+    this.setState({ imageUrl });
   }
 
   render() {
@@ -250,6 +238,10 @@ class ChatMenu extends Component {
                     {message_list.map((item, index) => {
                       if (item.adminUserId === undefined) {
                         let content = JSON.parse(item.messageContent);
+                        if (content.is_image === 'true') {
+                          let imageData = this.state.imageUrl[`${content.image.filename}`];
+                          if (imageData === undefined || imageData === null) this.getImageURL(content.image);
+                        }
                         return (
                           <li className="you" hidden={item.is_deletable} key={`messageList_${index}`}>
                             { item.messageDate === null ? null : (
@@ -273,7 +265,7 @@ class ChatMenu extends Component {
                                 <div className="message">
                                   {content.is_image === 'true' ? (
                                     <Image
-                                      src={item.message}
+                                      src={this.state.imageUrl[`${content.image.filename}`]}
                                       alt="document"
                                       width="150px"
                                     />
@@ -287,15 +279,17 @@ class ChatMenu extends Component {
                                   ) : (
                                     <div>{moment(item.messageDate).format("hh:mm")}</div>
                                   ) }
-                                  <div className="ml-2 message-delete">
-                                    <MdDelete
-                                      size="18"
-                                      className="cp"
-                                      onClick={() =>
-                                        this.onDeleteMessage(index)
-                                      }
-                                    />
-                                  </div>
+                                  { false ? (
+                                    <div className="ml-2 message-delete">
+                                      <MdDelete
+                                        size="18"
+                                        className="cp"
+                                        onClick={() =>
+                                          this.onDeleteMessage(index)
+                                        }
+                                      />
+                                    </div>
+                                  ) : null}
                                 </div>
                               </div>
                             </div>
@@ -339,15 +333,17 @@ class ChatMenu extends Component {
                                   ) : (
                                     <div>{moment(item.messageDate).format("hh:mm")}</div>
                                   )}
-                                  <div className="ml-2 message-delete">
-                                    <MdDelete
-                                      size="18"
-                                      className="cp"
-                                      onClick={() =>
-                                        this.onDeleteMessage(index)
-                                      }
-                                    />
-                                  </div>
+                                  { false ? (
+                                    <div className="ml-2 message-delete">
+                                      <MdDelete
+                                        size="18"
+                                        className="cp"
+                                        onClick={() =>
+                                          this.onDeleteMessage(index)
+                                        }
+                                      />
+                                    </div>
+                                  ) : null }
                                 </div>
                               </div>
                               <div
@@ -399,36 +395,38 @@ class ChatMenu extends Component {
                 }}
               >
                 <div className="d-flex align-items-stretch">
-                  <div className="d-flex justify-content-center align-items-center">
-                    <Button
-                      style={{
-                        borderRadius: "50%",
-                        width: "40px",
-                        height: "40px",
-                        overflow: "hidden"
-                      }}
-                      className="p-0 m-0 d-flex justify-content-center mr-2"
-                    >
-                      <label className="cp w-100 h-100 d-flex justify-content-center align-items-center">
-                        <div>
-                          <AiOutlinePaperClip size="20" />
-                        </div>
-                        <Input
-                          type="file"
-                          className="d-none"
-                          accept="image/*"
-                          onChange={async e => {
-                            if (e.target.value) {
-                              this.setState({
-                                message: "",
-                                image: e.target.files[0]
-                              });
-                            }
-                          }}
-                        />
-                      </label>
-                    </Button>
-                  </div>
+                  { false ? (
+                    <div className="d-flex justify-content-center align-items-center">
+                      <Button
+                        style={{
+                          borderRadius: "50%",
+                          width: "40px",
+                          height: "40px",
+                          overflow: "hidden"
+                        }}
+                        className="p-0 m-0 d-flex justify-content-center mr-2"
+                      >
+                        <label className="cp w-100 h-100 d-flex justify-content-center align-items-center">
+                          <div>
+                            <AiOutlinePaperClip size="20" />
+                          </div>
+                          <Input
+                            type="file"
+                            className="d-none"
+                            accept="image/*"
+                            onChange={async e => {
+                              if (e.target.value) {
+                                this.setState({
+                                  message: "",
+                                  image: e.target.files[0]
+                                });
+                              }
+                            }}
+                          />
+                        </label>
+                      </Button>
+                    </div>
+                  ) : null}
                   <Input
                     disabled={this.state.image !== null}
                     placeholder="Type a message here..."

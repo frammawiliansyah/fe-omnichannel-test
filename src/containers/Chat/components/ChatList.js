@@ -18,22 +18,11 @@ class ChatList extends Component {
   state = {
     loan_id: null,
     contactList: [],
-    chat_detail: {
-      number: null,
-      loan_id: null,
-      username: null,
-      message: null,
-      va_number: null,
-      loan_status: null,
-      loan_amount: null,
-      loan_length: null,
-      contact_id: null,
-      chat_id: null,
-    },
     loadingList: true,
     totalList: 0,
     intervalId: null,
-    socket: io(process.env.REACT_APP_API_END_POINT, {
+    scrollPosition: 999999999,
+    socket: io("http://20.198.170.239:3009", {
       path: "/echo/"
     })
   };
@@ -50,6 +39,8 @@ class ChatList extends Component {
     });
   }
 
+  setScroll = (scroolNumber) => document.getElementById("chat").scrollTop = scroolNumber;
+
   publisherSocket = (payload) => {
     this.state.socket.emit(
       `${process.env.REACT_APP_SOCK_END_POINT}::CALLBACK`,
@@ -57,10 +48,26 @@ class ChatList extends Component {
     );
   }
 
-  consumerSocket = async (payload) => {
-    const loanId = this.state.loan_id;
-    if (loanId !== null) {
-      console.log("Sock.Payload", payload);
+  consumerSocket = async (data) => {
+    const chatDetail = this.props.chat_detail;
+
+    if (chatDetail !== undefined && chatDetail !== null) {
+      if (chatDetail.chat_id === data.payload.chatId) {
+        const messageList = this.props.message_list.concat([ data.payload ]);
+        await this.props.setMessage({ message_list: messageList });
+        this.setScroll(this.state.scrollPosition);
+      } else {
+        let outgoingData = data.payload[1][0];
+        if (outgoingData.adminUserId !== undefined && outgoingData.adminUserId !== null) {
+          if (chatDetail.chat_id === outgoingData.chatId) {
+            let messageList = this.props.message_list;
+                messageList.splice(-1);
+            await this.props.setMessage({ message_list: messageList });
+            const updateMessageList = this.props.message_list.concat([ outgoingData ]);
+            await this.props.setMessage({ message_list: updateMessageList });
+          }
+        }
+      }
     }
   }
 
@@ -134,43 +141,41 @@ class ChatList extends Component {
   }
 
   getContactDetail = async (loanId) => {
-    const { contactList } = this.state; 
-    const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
-    const chatDetail = {
-      number: contactData.pj_loan_detail.mobileNumber,
-      loan_id: contactData.id,
-      username: contactData.pj_loan_detail.fullName.toUpperCase(),
-      va_number: contactData.pj_loan_disburse.virtualAccountNumber,
-      loan_status: contactData.loanStatus.toUpperCase(),
-      loan_amount: contactData.loanAmount,
-    };
+    const { contactList, loan_id } = this.state; 
 
-    this.setState({ contactList: [ contactData ], loan_id: loanId });
-    const contactDetail = await this.contactDetailAPI(chatDetail);
+    if (loanId !== loan_id) {
+      const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
+      const chatDetail = {
+        number: contactData.pj_loan_detail.mobileNumber,
+        loan_id: contactData.id,
+        username: contactData.pj_loan_detail.fullName.toUpperCase(),
+        va_number: contactData.pj_loan_disburse.virtualAccountNumber,
+        loan_status: contactData.loanStatus.toUpperCase(),
+        loan_amount: contactData.loanAmount,
+      };
 
-    if (contactDetail.status) {
-      chatDetail.contact_id = contactDetail.data.id;
-      chatDetail.chat_id = contactDetail.data.chat.id;
-      chatDetail.admin_user_id = this.props.user.id;
+      this.setState({ contactList: [ contactData ], loan_id: loanId });
+      const contactDetail = await this.contactDetailAPI(chatDetail);
 
-      await this.props.setMessage({
-        message_list: [],
-        load_message: true,
-        chat_detail: chatDetail,
-      });
+      if (contactDetail.status) {
+        chatDetail.contact_id = contactDetail.data.id;
+        chatDetail.chat_id = contactDetail.data.chat.id;
+        chatDetail.admin_user_id = this.props.user.id;
 
-      const chatData = await this.chatDataAPI(chatDetail.loan_id);
+        await this.props.setMessage({ message_list: [], load_message: true, chat_detail: chatDetail });
+        const chatData = await this.chatDataAPI(chatDetail.loan_id);
 
-      if (chatData.status) {
-        const message_list = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
-        await this.props.setMessage({
-          load_message: false,
-          message_list
-        });
+        if (chatData.status) {
+          const messageList = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
+          messageList.sort((a,b) => {
+            return new Date(a.messageDate) - new Date(b.messageDate);
+          });
 
-        this.setState({ chat_detail: chatDetail });
-      } else {
-        await this.props.setMessage({ load_message: false });
+          await this.props.setMessage({ load_message: false, message_list: messageList });
+          this.setScroll(this.state.scrollPosition);
+        } else {
+          await this.props.setMessage({ load_message: false });
+        }
       }
     }
   };
@@ -184,6 +189,7 @@ class ChatList extends Component {
   render() {
     const { contactList, totalList } = this.state;
     const chatList = this.props.chat_list;
+    const chatDetail = this.props.chat_detail;
 
     return (
       <div className="chat-list-container">
@@ -209,10 +215,10 @@ class ChatList extends Component {
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll
               dataLength={chatList.length}
-              next={() => this.contactListAPI()}
-              hasMore={chatList.length >= 0 && chatList.length < totalList}
               scrollableTarget="chat-history"
               style={{ overflow: "hidden" }}
+              next={() => this.contactListAPI()}
+              hasMore={chatList.length > 1 && chatList.length < totalList}
               loader={
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
@@ -221,9 +227,13 @@ class ChatList extends Component {
             >
               {contactList.map((item, index) => (
                 <div key={`chat-list-${index}`} className="chat-list p-2">
-                  <div style={{ cursor: "pointer" }} onClick={() => this.getContactDetail(item.id)}>
+                  <div
+                    style={{ cursor: "pointer" }}
+                    onClick={() => this.getContactDetail(item.id)
+                  }>
                     <List.Item>
                       <List.Item.Meta
+                        title={item.pj_loan_detail.fullName.toUpperCase()}
                         avatar={
                           <Avatar size={50}>
                             <b>
@@ -233,13 +243,16 @@ class ChatList extends Component {
                             </b>
                           </Avatar>
                         }
-                        title={item.pj_loan_detail.fullName.toUpperCase()}
                         description={
-                          `ID (${item.id}) - HP (0${
-                            Number(item.pj_loan_detail.mobileNumber)
-                              .toString()
-                              .replace(/\B(?=(\d{4})+(?!\d))/g, "-")
-                          })`
+                          <div>
+                            {`ID (${item.id})`}
+                            <br />
+                            {`HP (+62 ${
+                              Number(item.pj_loan_detail.mobileNumber)
+                                .toString()
+                                .replace(/\B(?=(\d{4})+(?!\d))/g, " ")
+                            })`}
+                          </div>
                         }
                       />
                     </List.Item>
@@ -257,6 +270,7 @@ class ChatList extends Component {
 const mapStateToProps = state => {
   return {
     chat_list: state.message.chat_list,
+    message_list: state.message.message_list,
     user: state.user.account,
     chat_detail: state.message.chat_detail
   };
