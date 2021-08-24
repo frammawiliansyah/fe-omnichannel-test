@@ -277,7 +277,7 @@ class ChatMenu extends Component {
                                   { item.messageDate === null ? (
                                     <div>On Progress ...</div>
                                   ) : (
-                                    <div>By {chat_detail.username} - {moment(item.messageDate).format("hh:mm")}</div>
+                                    <div>{chat_detail.username ? `By ${chat_detail.username} - ` : null } {moment(item.messageDate).format("hh:mm")}</div>
                                   ) }
                                   { false ? (
                                     <div className="ml-2 message-delete">
@@ -331,7 +331,7 @@ class ChatMenu extends Component {
                                   { item.messageDate === null ? (
                                     <div>On Progress ...</div>
                                   ) : (
-                                    <div>By {item.admin_user.username.toUpperCase()} - {moment(item.messageDate).format("hh:mm")}</div>
+                                    <div>{item.admin_user.username.username ? `By ${chat_detail.username.toUpperCase()} - ` : null } {moment(item.messageDate).format("hh:mm")}</div>
                                   )}
                                   { false ? (
                                     <div className="ml-2 message-delete">
