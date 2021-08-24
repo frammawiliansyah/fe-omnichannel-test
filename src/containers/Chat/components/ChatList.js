@@ -23,6 +23,7 @@ class ChatList extends Component {
     intervalId: null,
     scrollPosition: 999999999,
     refreshLoading: false,
+    refreshButton: false,
     socket: io(`${process.env.REACT_APP_API_END_POINT}`, {
       path: "/echo/"
     })
@@ -107,7 +108,7 @@ class ChatList extends Component {
       });
     }
 
-    this.setState({ loadingList: false });
+    this.setState({ loadingList: false, refreshButton: false });
   }
 
   contactDetailAPI = async (payload) => {
@@ -186,7 +187,7 @@ class ChatList extends Component {
       }
     }
 
-    this.setState({ refreshLoading: false });
+    this.setState({ refreshLoading: false, refreshButton: true });
   };
 
   refreshData = () => {
@@ -198,13 +199,10 @@ class ChatList extends Component {
 
   render() {
     let showButton = false;
-    const { contactList, totalList, refreshLoading } = this.state;
+    const { contactList, totalList, refreshLoading, refreshButton } = this.state;
     const chatList = this.props.chat_list;
     const messageList = this.props.message_list;
     const chatDetail = this.props.chat_detail;
-
-    console.log("chatDetail.number", chatDetail.number, "messageList.length", messageList.length);
-
     if (chatDetail.number && messageList.length <= 0) showButton = true;
 
     return (
@@ -229,7 +227,7 @@ class ChatList extends Component {
           </div>
           { showButton ? (
             <div className="text-center input-search m-2 p-2">
-              {refreshLoading ? (
+              {refreshLoading && refreshButton ? (
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
                 </div>
