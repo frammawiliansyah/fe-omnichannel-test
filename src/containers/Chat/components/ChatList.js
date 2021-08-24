@@ -80,9 +80,10 @@ class ChatList extends Component {
   contactListAPI = async (onSearch = null) => {
     let chatDataList = {};
     const loanId = this.state.loan_id;
-    const payload = { offset: this.props.chat_list.length };
+    let payload = { offset: this.props.chat_list.length };
     
     if (loanId !== null && loanId !== '' && loanId !== 0) payload.loan_id = loanId;
+    if (loanId === '') payload.offset = 0 
 
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
