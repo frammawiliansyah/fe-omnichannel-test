@@ -218,7 +218,7 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
-          {chatDetail.number && messageList.length <= 0 ? (
+          { chatDetail.number === undefined || chatDetail.number === null || messageList.number === undefined || messageList.number === null || messageList.length <= 0 ? null : (
             <div className="text-center input-search m-2 p-2">
               {refreshLoading ? (
                 <div className="text-center p-2">
@@ -230,7 +230,7 @@ class ChatList extends Component {
                 </Button>
               )}
             </div>
-          ) : null}
+          )}
           <br />
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll
