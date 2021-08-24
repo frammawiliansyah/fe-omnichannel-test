@@ -83,7 +83,10 @@ class ChatList extends Component {
     let payload = { offset: this.props.chat_list.length };
     
     if (loanId !== null && loanId !== '' && loanId !== 0) payload.loan_id = loanId;
-    if (loanId === '') payload.offset = 0 
+    if (loanId === '') {
+      this.setState({ loan_id: null });
+      payload.offset = 0;
+    }
 
     const response = await axios.post(
       process.env.REACT_APP_API_END_POINT + "/omnichannel/loans",
@@ -194,10 +197,15 @@ class ChatList extends Component {
   }
 
   render() {
+    let showButton = false;
     const { contactList, totalList, refreshLoading } = this.state;
     const chatList = this.props.chat_list;
     const messageList = this.props.message_list;
     const chatDetail = this.props.chat_detail;
+
+    console.log("chatDetail.number", chatDetail.number, "messageList.length", messageList.length);
+
+    if (chatDetail.number && messageList.length <= 0) showButton = true;
 
     return (
       <div className="chat-list-container">
@@ -219,15 +227,17 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
-          { chatDetail.number && messageList.length <= 0 ? (
+          { showButton ? (
             <div className="text-center input-search m-2 p-2">
               {refreshLoading ? (
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
                 </div>
               ) : (
-                <Button color="primary" onClick={() => this.refreshData()}>
-                  Lihat Data
+                <Button color="success" onClick={() => this.refreshData()}>
+                  <b style={{ "font-size" : "13px", "padding" : "0 15px" }}>
+                    Sync Whatsapp {`+62 ${Number(chatDetail.number).toString().replace(/\B(?=(\d{4})+(?!\d))/g, " ")}`}
+                  </b>
                 </Button>
               )}
             </div>
