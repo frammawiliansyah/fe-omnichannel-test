@@ -22,6 +22,7 @@ class ChatList extends Component {
     totalList: 0,
     intervalId: null,
     scrollPosition: 999999999,
+    refreshLoading: false,
     socket: io(`${process.env.REACT_APP_API_END_POINT}`, {
       path: "/echo/"
     })
@@ -37,6 +38,7 @@ class ChatList extends Component {
     socket.on(`${process.env.REACT_APP_SOCK_END_POINT}`, data => {
       if (data.payload.reload) {
         self.getContactDetail(data.payload.loan_id);
+        self.setState({ refreshLoading: false });
       } else {
         self.consumerSocket(data);
       }
@@ -179,16 +181,19 @@ class ChatList extends Component {
         await this.props.setMessage({ load_message: false });
       }
     }
+
+    this.setState({ refreshLoading: false });
   };
 
   refreshData = () => {
+    this.setState({ refreshLoading: true });
     axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
       whatsapp_number: this.props.chat_detail.number
     });
   }
 
   render() {
-    const { contactList, totalList } = this.state;
+    const { contactList, totalList, refreshLoading } = this.state;
     const chatList = this.props.chat_list;
 
     return (
@@ -213,9 +218,15 @@ class ChatList extends Component {
           </div>
           {this.props.chat_detail.number ? (
             <div className="text-center input-search m-2 p-2">
-              <Button color="primary" onClick={() => this.refreshData()}>
-                Lihat Data
-              </Button>
+              {refreshLoading > (
+                <div className="text-center p-2">
+                  Memuat data... <Spinner size="sm" color="primary" />
+                </div>
+              ) : (
+                <Button color="primary" onClick={() => this.refreshData()}>
+                  Lihat Data
+                </Button>
+              )}
             </div>
           ) : null}
           <br />
