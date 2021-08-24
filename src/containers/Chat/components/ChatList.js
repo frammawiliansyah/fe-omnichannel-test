@@ -34,8 +34,12 @@ class ChatList extends Component {
     self.contactListAPI();
     socket.on("connect", () => console.log("connect", socket.id));
     socket.on("disconnect", () => console.log("disconnect", socket.id));
-    socket.on(`${process.env.REACT_APP_SOCK_END_POINT}`, payload => {
-      self.consumerSocket(payload);
+    socket.on(`${process.env.REACT_APP_SOCK_END_POINT}`, data => {
+      if (data.payload.reload) {
+        self.getContactDetail(data.payload.loan_id);
+      } else {
+        self.consumerSocket(data);
+      }
     });
   }
 
@@ -142,54 +146,50 @@ class ChatList extends Component {
 
   getContactDetail = async (loanId) => {
     const { contactList, loan_id } = this.state; 
+    const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
+    const chatDetail = {
+      number: contactData.pj_loan_detail.mobileNumber,
+      loan_id: contactData.id,
+      username: contactData.pj_loan_detail.fullName.toUpperCase(),
+      va_number: contactData.pj_loan_disburse.virtualAccountNumber,
+      loan_status: contactData.loanStatus.toUpperCase(),
+      loan_amount: contactData.loanAmount,
+    };
 
-    if (loanId !== loan_id) {
-      const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
-      const chatDetail = {
-        number: contactData.pj_loan_detail.mobileNumber,
-        loan_id: contactData.id,
-        username: contactData.pj_loan_detail.fullName.toUpperCase(),
-        va_number: contactData.pj_loan_disburse.virtualAccountNumber,
-        loan_status: contactData.loanStatus.toUpperCase(),
-        loan_amount: contactData.loanAmount,
-      };
+    this.setState({ contactList: [ contactData ], loan_id: loanId });
+    const contactDetail = await this.contactDetailAPI(chatDetail);
 
-      this.setState({ contactList: [ contactData ], loan_id: loanId });
-      const contactDetail = await this.contactDetailAPI(chatDetail);
+    if (contactDetail.status) {
+      chatDetail.contact_id = contactDetail.data.id;
+      chatDetail.chat_id = contactDetail.data.chat.id;
+      chatDetail.admin_user_id = this.props.user.id;
 
-      if (contactDetail.status) {
-        chatDetail.contact_id = contactDetail.data.id;
-        chatDetail.chat_id = contactDetail.data.chat.id;
-        chatDetail.admin_user_id = this.props.user.id;
+      await this.props.setMessage({ message_list: [], load_message: true, chat_detail: chatDetail });
+      const chatData = await this.chatDataAPI(chatDetail.loan_id);
 
-        await this.props.setMessage({ message_list: [], load_message: true, chat_detail: chatDetail });
-        const chatData = await this.chatDataAPI(chatDetail.loan_id);
+      if (chatData.status) {
+        const messageList = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
+        messageList.sort((a,b) => {
+          return new Date(a.messageDate) - new Date(b.messageDate);
+        });
 
-        if (chatData.status) {
-          const messageList = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
-          messageList.sort((a,b) => {
-            return new Date(a.messageDate) - new Date(b.messageDate);
-          });
-
-          await this.props.setMessage({ load_message: false, message_list: messageList });
-          this.setScroll(this.state.scrollPosition);
-        } else {
-          await this.props.setMessage({ load_message: false });
-        }
+        await this.props.setMessage({ load_message: false, message_list: messageList });
+        this.setScroll(this.state.scrollPosition);
+      } else {
+        await this.props.setMessage({ load_message: false });
       }
     }
   };
 
   refreshData = () => {
-    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
-      whatsapp_number: this.props.chat_detail.number
+    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/reload", {
+      number: this.props.chat_detail.number
     });
   }
 
   render() {
     const { contactList, totalList } = this.state;
     const chatList = this.props.chat_list;
-    const chatDetail = this.props.chat_detail;
 
     return (
       <div className="chat-list-container">
