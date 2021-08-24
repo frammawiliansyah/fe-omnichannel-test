@@ -219,7 +219,7 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
-          { chatDetail.number === undefined || chatDetail.number === null || messageList.number === undefined || messageList.number === null || messageList.length > 0 ? null : (
+          { chatDetail.number && messageList.length <= 0 ? (
             <div className="text-center input-search m-2 p-2">
               {refreshLoading ? (
                 <div className="text-center p-2">
@@ -229,7 +229,7 @@ class ChatList extends Component {
                 <Button color="primary" onClick={() => this.refreshData()}>
                   Lihat Data
                 </Button>
-              )}
+              ) : null}
             </div>
           )}
           <br />
