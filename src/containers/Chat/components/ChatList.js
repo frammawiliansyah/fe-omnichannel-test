@@ -208,7 +208,9 @@ class ChatList extends Component {
     return (
       <div className="chat-list-container">
         <div className="brand">
-          <img src={logo} alt="" className="img-fluid" />
+          <a href="/chat">
+            <img src={logo} alt="" className="img-fluid" />
+          </a>
         </div>
         <div className="list-unstyled components px-2">
           <div className="text-center input-search m-2 p-2">
@@ -225,9 +227,9 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
-          { showButton ? (
+          { showButton && refreshButton ? (
             <div className="text-center input-search m-2 p-2">
-              {refreshLoading && refreshButton ? (
+              {refreshLoading ? (
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
                 </div>

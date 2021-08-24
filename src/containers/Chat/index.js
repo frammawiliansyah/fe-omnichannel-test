@@ -183,12 +183,12 @@ class ChatMenu extends Component {
   }
 
   render() {
-    const { message_list } = this.props;
+    const { message_list, chat_detail } = this.props;
     const { scrollPosition } = this.state;
     
     return (
       <div>
-        <div hidden={this.props.chat_detail.loan_id !== null}>
+        <div hidden={chat_detail.loan_id !== null}>
           <Navbar />
           <br />
           <Card>
@@ -202,12 +202,12 @@ class ChatMenu extends Component {
             </CardBody>
           </Card>
         </div>
-        <Row hidden={this.props.chat_detail.loan_id === null}>
+        <Row hidden={chat_detail.loan_id === null}>
           <Col sm={8}>
             <Card>
               <CardBody>
                 <div className="text-center p-2">
-                  <b>{this.props.chat_detail.username}</b>
+                  <b>{chat_detail.username}</b>
                 </div>
                 <hr />
                 <div style={{ height: "75vh" }}>
@@ -277,7 +277,7 @@ class ChatMenu extends Component {
                                   { item.messageDate === null ? (
                                     <div>On Progress ...</div>
                                   ) : (
-                                    <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                    <div>By {chat_detail.username} - {moment(item.messageDate).format("hh:mm")}</div>
                                   ) }
                                   { false ? (
                                     <div className="ml-2 message-delete">
@@ -331,7 +331,7 @@ class ChatMenu extends Component {
                                   { item.messageDate === null ? (
                                     <div>On Progress ...</div>
                                   ) : (
-                                    <div>{moment(item.messageDate).format("hh:mm")}</div>
+                                    <div>By {item.admin_user.username.toUpperCase()} - {moment(item.messageDate).format("hh:mm")}</div>
                                   )}
                                   { false ? (
                                     <div className="ml-2 message-delete">
