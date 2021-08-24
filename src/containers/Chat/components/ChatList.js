@@ -58,7 +58,7 @@ class ChatList extends Component {
         this.setScroll(this.state.scrollPosition);
       } else {
         let outgoingData = data.payload[1][0];
-        if (outgoingData.adminUserId !== undefined && outgoingData.adminUserId !== null) {
+        if (outgoingData !== undefined && outgoingData.adminUserId !== undefined && outgoingData.adminUserId !== null) {
           if (chatDetail.chat_id === outgoingData.chatId) {
             let messageList = this.props.message_list;
                 messageList.splice(-1);
@@ -182,7 +182,7 @@ class ChatList extends Component {
 
   refreshData = () => {
     axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
-      chat_id: this.props.chat_detail.chat_id
+      whatsapp_number: this.props.chat_detail.number
     });
   }
 
@@ -211,6 +211,13 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
+          {this.props.chat_detail.number ? (
+            <div className="text-center input-search m-2 p-2">
+              <Button color="primary" onClick={() => this.refreshData()}>
+                Lihat Data
+              </Button>
+            </div>
+          ) : null}
           <br />
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll

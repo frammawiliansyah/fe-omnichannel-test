@@ -211,7 +211,7 @@ class ChatMenu extends Component {
                 </div>
                 <hr />
                 <div style={{ height: "75vh" }}>
-                  <ul id="chat" onScroll={() => this.onScrollChange()}>
+                  <ul id="chat">
                     <div
                       className="text-center p-2"
                       style={{
