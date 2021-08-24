@@ -195,6 +195,7 @@ class ChatList extends Component {
   render() {
     const { contactList, totalList, refreshLoading } = this.state;
     const chatList = this.props.chat_list;
+    const messageList = this.props.message_list;
 
     return (
       <div className="chat-list-container">
@@ -218,7 +219,7 @@ class ChatList extends Component {
           </div>
           {this.props.chat_detail.number ? (
             <div className="text-center input-search m-2 p-2">
-              {refreshLoading ? (
+              {refreshLoading && messageList.length <= 0 ? (
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
                 </div>
