@@ -229,9 +229,9 @@ class ChatList extends Component {
                 <Button color="primary" onClick={() => this.refreshData()}>
                   Lihat Data
                 </Button>
-              ) : null}
+              )}
             </div>
-          )}
+          ) : null}
           <br />
           <div id="chat-history" style={{ overflow: "auto", height: "74vh" }}>
             <InfiniteScroll
