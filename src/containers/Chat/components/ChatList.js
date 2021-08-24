@@ -182,8 +182,8 @@ class ChatList extends Component {
   };
 
   refreshData = () => {
-    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/reload", {
-      number: this.props.chat_detail.number
+    axios.post(process.env.REACT_APP_API_END_POINT + "/omnichannel/chats/refresh", {
+      whatsapp_number: this.props.chat_detail.number
     });
   }
 
