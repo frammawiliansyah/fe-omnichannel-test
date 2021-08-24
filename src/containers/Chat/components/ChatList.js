@@ -219,7 +219,7 @@ class ChatList extends Component {
               </Button>
             </div>
           </div>
-          { chatDetail.number === undefined || chatDetail.number === null || messageList.number === undefined || messageList.number === null || messageList.length <= 0 ? null : (
+          { chatDetail.number === undefined || chatDetail.number === null || messageList.number === undefined || messageList.number === null || messageList.length > 0 ? null : (
             <div className="text-center input-search m-2 p-2">
               {refreshLoading ? (
                 <div className="text-center p-2">
