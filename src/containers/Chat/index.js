@@ -232,15 +232,17 @@ class ChatMenu extends Component {
                             )}
                             <div className="d-flex justify-content-start">
                               <div className="message-box">
-                                <div className="message">
+                                <div className="message" style={content.is_image === 'true' ? { "width" : "180px" } : null }>
                                   {content.is_image === 'true' ? (
-                                    <Image
-                                      src={this.state.imageUrl[`${content.image.filename}`]}
-                                      alt="document"
-                                      width="150px"
-                                    />
+                                    <div>
+                                      <Image
+                                        src={this.state.imageUrl[`${content.image.filename}`]}
+                                        alt="document"
+                                        width="150px"
+                                      />
+                                      <br />
+                                    </div>
                                   ) : null}
-                                  <br />
                                   {content.text !== undefined && content.text !== null ? (
                                     this.handleMessage(content.text)
                                   ) : null}
