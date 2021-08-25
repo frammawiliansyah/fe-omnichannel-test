@@ -240,6 +240,7 @@ class ChatMenu extends Component {
                                       width="150px"
                                     />
                                   ) : null}
+                                  <br />
                                   {content.text !== undefined && content.text !== null ? (
                                     this.handleMessage(content.text)
                                   ) : null}
