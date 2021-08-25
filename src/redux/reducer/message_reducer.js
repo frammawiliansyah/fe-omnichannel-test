@@ -11,6 +11,8 @@ const initState = {
     loan_length: null,
     contact_id: null,
     chat_id: null,
+    profile_filename: null,
+    profile_folder: null,
   },
   message_list: [],
   load_message: false,

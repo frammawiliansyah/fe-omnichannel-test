@@ -165,6 +165,8 @@ class ChatList extends Component {
       chatDetail.contact_id = contactDetail.data.id;
       chatDetail.chat_id = contactDetail.data.chat.id;
       chatDetail.admin_user_id = this.props.user.id;
+      chatDetail.profile_filename = contactDetail.data.profileFilename;
+      chatDetail.profile_folder = contactDetail.data.profileFolder;
 
       let prepareMessage = { chat_detail: chatDetail };
       if (loanId !== loan_id) {
