@@ -239,9 +239,10 @@ class ChatMenu extends Component {
                                       alt="document"
                                       width="150px"
                                     />
-                                  ) : (
+                                  ) : null}
+                                  {content.text !== undefined && content.text !== null ? (
                                     this.handleMessage(content.text)
-                                  )}
+                                  ) : null}
                                 </div>
                                 <div className="d-flex align-items-center justify-content-end message-footer text-muted text-right pt-2 pr-2">
                                   { item.messageDate === null ? (
