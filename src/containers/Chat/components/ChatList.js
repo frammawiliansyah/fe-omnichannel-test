@@ -24,6 +24,7 @@ class ChatList extends Component {
     scrollPosition: 999999999,
     refreshLoading: false,
     refreshButton: false,
+    availableClick: true,
     socket: io(`${process.env.REACT_APP_API_END_POINT}`, {
       path: "/echo/"
     })
@@ -179,9 +180,7 @@ class ChatList extends Component {
 
       if (chatData.status) {
         const messageList = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
-              messageList.sort((a,b) => {
-                return new Date(a.messageDate) - new Date(b.messageDate);
-              });
+              messageList.sort((a,b) => { return new Date(a.messageDate) - new Date(b.messageDate) });
         if (messageList.length <= 0) refreshButton = true;
         await this.props.setMessage({ load_message: false, message_list: messageList });
         this.setScroll(this.state.scrollPosition);
@@ -252,7 +251,7 @@ class ChatList extends Component {
               scrollableTarget="chat-history"
               style={{ overflow: "hidden" }}
               next={() => this.contactListAPI()}
-              hasMore={chatList.length > 1 && chatList.length < totalList}
+              hasMore={chatList.length > 1 && chatList.length < totalList && this.state.loan_id === null}
               loader={
                 <div className="text-center p-2">
                   Memuat data... <Spinner size="sm" color="primary" />
