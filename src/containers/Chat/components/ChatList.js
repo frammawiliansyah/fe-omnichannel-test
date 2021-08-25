@@ -66,13 +66,7 @@ class ChatList extends Component {
       } else {
         let outgoingData = data.payload[1][0];
         if (outgoingData !== undefined && outgoingData.adminUserId !== undefined && outgoingData.adminUserId !== null) {
-          if (chatDetail.chat_id === outgoingData.chatId) {
-            let messageList = this.props.message_list;
-                messageList.splice(-1);
-            await this.props.setMessage({ message_list: messageList });
-            const updateMessageList = this.props.message_list.concat([ outgoingData ]);
-            await this.props.setMessage({ message_list: updateMessageList });
-          }
+          if (chatDetail.chat_id === outgoingData.chatId) this.getContactDetail(chatDetail.loan_id);
         }
       }
     }
@@ -152,7 +146,8 @@ class ChatList extends Component {
   }
 
   getContactDetail = async (loanId) => {
-    const { contactList, loan_id } = this.state; 
+    let refreshButton = false;
+    const { contactList, loan_id } = this.state;
     const contactData = contactList.find( ({ id }) => Number(id) === Number(loanId) );
     const chatDetail = {
       number: contactData.pj_loan_detail.mobileNumber,
@@ -171,15 +166,21 @@ class ChatList extends Component {
       chatDetail.chat_id = contactDetail.data.chat.id;
       chatDetail.admin_user_id = this.props.user.id;
 
-      await this.props.setMessage({ message_list: [], load_message: true, chat_detail: chatDetail });
+      let prepareMessage = { chat_detail: chatDetail };
+      if (loanId !== loan_id) {
+        prepareMessage.message_list = [];
+        prepareMessage.load_message = true;
+      }
+
+      await this.props.setMessage(prepareMessage);
       const chatData = await this.chatDataAPI(chatDetail.loan_id);
 
       if (chatData.status) {
         const messageList = chatData.data[0].chat.incoming_messages.concat(chatData.data[0].chat.outgoing_messages);
-        messageList.sort((a,b) => {
-          return new Date(a.messageDate) - new Date(b.messageDate);
-        });
-
+              messageList.sort((a,b) => {
+                return new Date(a.messageDate) - new Date(b.messageDate);
+              });
+        if (messageList.length <= 0) refreshButton = true;
         await this.props.setMessage({ load_message: false, message_list: messageList });
         this.setScroll(this.state.scrollPosition);
       } else {
@@ -187,7 +188,7 @@ class ChatList extends Component {
       }
     }
 
-    this.setState({ refreshLoading: false, refreshButton: true });
+    this.setState({ refreshLoading: false, refreshButton });
   };
 
   refreshData = () => {
@@ -235,7 +236,7 @@ class ChatList extends Component {
                 </div>
               ) : (
                 <Button color="success" onClick={() => this.refreshData()}>
-                  <b style={{ "font-size" : "13px", "padding" : "0 15px" }}>
+                  <b style={{ "fontSize" : "13px", "padding" : "0 15px" }}>
                     Sync Whatsapp {`+62 ${Number(chatDetail.number).toString().replace(/\B(?=(\d{4})+(?!\d))/g, " ")}`}
                   </b>
                 </Button>

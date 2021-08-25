@@ -79,43 +79,6 @@ class ChatMenu extends Component {
     }    
   }
 
-  // WILL BE FIXED
-  onScrollChange() {
-    let scrollPosition = document.getElementById("chat").scrollTop;
-    let scrollHeight = document.getElementById("chat").scrollHeight;
-
-    if (scrollHeight - scrollPosition > 1000 && this.state.isHiddenBtnScroll) {
-      this.setState({ isHiddenBtnScroll: false });
-    }
-    
-    if (scrollHeight - scrollPosition < 1000 && !this.state.isHiddenBtnScroll) {
-      this.setState({ isHiddenBtnScroll: true });
-    }
-    
-    if (scrollPosition === 0 && this.props.message_list.length < 15) {
-      this.setState({ isScrollTop: true });
-      setTimeout(async () => {
-        await this.handleChange({
-          message_list: [
-            {
-              loan_id: 1,
-              username: "Adele",
-              date: "2020-06-20 08:03",
-              message: "Lorem ipsum dolor sit amet",
-              is_image: false,
-              is_deletable: false
-            },
-            ...this.props.message_list
-          ]
-        });
-
-        this.setScroll(document.getElementById("chat").scrollHeight - scrollHeight);
-      }, 500);
-    } else {
-      this.setState({ isScrollTop: false });
-    }
-  }
-
   handleMessage = message => {
     if (message !== undefined && message !== null) {
       let arr = message.split(/(https?:\/\/[^\s]+)/g);
@@ -156,7 +119,14 @@ class ChatMenu extends Component {
     );
 
     if (sendMessage.data.status === 'SUCCESS') {
-      await this.handleChange({ message_list: this.props.message_list.concat(sendMessage.data.outgoingMessage) });
+      let outgoingMessage = sendMessage.data.outgoingMessage;
+          outgoingMessage.messageDate = moment().toISOString();
+          outgoingMessage.admin_user = this.props.user;
+      const messageList = this.props.message_list.concat(outgoingMessage);
+            messageList.sort((a,b) => {
+              return new Date(a.messageDate) - new Date(b.messageDate);
+            });
+      await this.handleChange({ message_list: messageList });
       await this.setState({ messageContent: "", image: null });
     }
 
@@ -185,7 +155,7 @@ class ChatMenu extends Component {
   render() {
     const { message_list, chat_detail } = this.props;
     const { scrollPosition } = this.state;
-    
+
     return (
       <div>
         <div hidden={chat_detail.loan_id !== null}>
@@ -250,7 +220,7 @@ class ChatMenu extends Component {
                                 hidden={
                                   index > 0 &&
                                   moment(
-                                    message_list[index - 1].date
+                                    message_list[index - 1].messageDate
                                   ).format("DD/MM/YYYY") ===
                                     moment(item.messageDate).format("DD/MM/YYYY")
                                 }
@@ -307,7 +277,7 @@ class ChatMenu extends Component {
                                 hidden={
                                   index > 0 &&
                                   moment(
-                                    message_list[index - 1].date
+                                    message_list[index - 1].messageDate
                                   ).format("DD/MM/YYYY") ===
                                     moment(item.messageDate).format("DD/MM/YYYY")
                                 }
